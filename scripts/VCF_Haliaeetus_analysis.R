@@ -313,247 +313,300 @@ for(i in chrom_out){
 # OutLoc_annot<-data.frame(Annot_out,chrom_out,pos_out,OutLoc[,-1])
 # OutAnnot<-Annot_minE_best_NRecip_TSL[Annot_minE_best_NRecip_TSL$TR%in%OutLoc_annot$Annot_out]
 
-#write.csv(OutLoc_annot,"OutLoc_annot.csv",quote = F,row.names = F)
-#write.csv(OutAnnot,"OutAnnot.csv",quote = F,row.names = F)
 
-OutLocAnnot<-merge(OutLoc_annot,OutAnnot,by.x="Annot_out",by.y="TR")
-#write.csv(OutLocAnnot,"OutLocAnnot.csv",quote = F,row.names = F)
-#OutLocAnnot<-read.csv("OutLocAnnot.csv")
-
-OutLocAnnot<-read.csv("OutLocAnnot.csv")
-
-Y<-read.vcfR("All.calls.FFF.recode.Annot_NRecip_TSL.vcf")
-
-#write.vcf(Z, file = "All.calls.FFF.recode.Annot_NRecip_TSL_outliers.vcf", mask = FALSE, APPEND = FALSE)
-###################################################
-# Try the same as above but with no T. ventricosus
-###################################################
-
-G_nT<-G[,-c(68:77)] # Filter T.v.
-SNPmat_nT<-(t(G_nT))
-#G[is.na(G)]<-9
-
-chromosome_n<-as.numeric(factor(chromosome))
-pos_loc<-paste(chromosome,position,sep="_")
-colnames(SNPmat_nT)<-pos_loc
-G_nMT<-SNPmat_nT[ , apply(SNPmat_nT, 2, function(x) !any(is.na(x)))]
-chrom_fil<-colnames(G_nMT)[colnames(G_nMT)%in%pos_loc]
-
-#chrom_filt<-as.numeric(sub("_.*", "", chrom_fil))
-#pos_filt<-as.numeric(sub(".*_", "", chrom_fil))
-pop_nT<-pop[-c(68:77)]
-my_fst_nT <- MakeDiploidFSTMat(G_nMT, locusNames = chrom_fil, popNames = pop_nT)
-
-plot(my_fst_nT$He, my_fst_nT$FST, xlab="Heterozygosity", ylab="F_ST across all populations", main="Per locus F_ST vs Heterozygosity")
-
-# If a locus has a much lower sample size compared to the rest, it could have a broader error distribution (and therefore incorrectly inferred as an outlier).
-plot(my_fst_nT$FST, my_fst_nT$FSTNoCorr)
-abline(0,1)
-
-Ga_nT<-add_code256(big_copy(G_nMT,type="raw"),code=bigsnpr:::CODE_012)
-ind.keep<-snp_clumping(G=Ga_nT,infos.chr=chrom_filt ,infos.pos=pos_filt)
-m <- ncol(Ga_nT)
-length(ind.keep) / m
-
-out_trim <- OutFLANK(my_fst_nT[ind.keep,], NumberOfSamples=length(unique(pop_nT)), qthreshold = 0.01, Hmin = 0.1)
-str(out_trim)
-
-OutFLANKResultsPlotter(out_trim, withOutliers = TRUE,
-                       NoCorr = TRUE, Hmin = 0.1, binwidth = 0.01, Zoom =
-                         FALSE, RightZoomFraction = 0.05, titletext = NULL)
-## Zoom in on right tail
-OutFLANKResultsPlotter(out_trim , withOutliers = TRUE,
-                       NoCorr = TRUE, Hmin = 0.1, binwidth = 0.01, Zoom =
-                         TRUE, RightZoomFraction = 0.15, titletext = NULL)
-
-hist(out_trim$results$pvaluesRightTail)
-
-P1 <- pOutlierFinderChiSqNoCorr(my_fst_nT, Fstbar = out_trim$FSTNoCorrbar, dfInferred = out_trim$dfInferred, qthreshold = 0.05, Hmin=0.1)
-
-(my_out <- P1$OutlierFlag==TRUE)
-plot(P1$He, P1$FST, pch=19, col=rgb(0,0,0,0.1))
-points(P1$He[my_out], P1$FST[my_out], col="blue")
-
-hist(P1$pvaluesRightTail)
-
-OutLoc<-P1[P1$OutlierFlag==TRUE,]
-OutLoc<-OutLoc[!is.na(OutLoc$OutlierFlag),]
-
-#######################################################
-# PCA with only significant outliers
-#######################################################
-
-#Z<-Y[apply(Y@fix[,c(1,2)],1,paste,collapse="") %in% apply(cbind(as.character(OutLocAnnot$Annot_out),OutLocAnnot$pos_out),1,paste,collapse="")]
-
-#write.vcf(Z, file = "All.calls.FFF.recode.Annot_NRecip_TSL_outliers.vcf", mask = FALSE, APPEND = FALSE)
-#vcf.fn<-"~/Desktop/Data_Files/Exon_cap_seq-UseThisOne/All.calls.FFF.recode.Annot_NRecip_TSL_outliers.vcf"
-#snpgdsVCF2GDS(vcf.fn, "All_calls_annot_outliers.gds",method = "copy.num.of.ref")
-
-#snpgdsClose(AllCallAnnot)
-AllCallAnnot <- snpgdsOpen("All_calls_annot_outliers.gds")
-
-pcaC <- snpgdsPCA(AllCallAnnot,autosome.only=F)
-
-pc.percent <- pcaC$varprop*100
-head(round(pc.percent, 2))
-
-tab <- data.frame(sample.id = pcaC$sample.id,
-                  EV1 = pcaC$eigenvect[,1],
-                  EV2 = pcaC$eigenvect[,2],
-                  EV3 = pcaC$eigenvect[,3],
-                  EV4 = pcaC$eigenvect[,4],
-                  EV5 = pcaC$eigenvect[,5],
-                  EV6 = pcaC$eigenvect[,6],
-                  stringsAsFactors = FALSE)
-
-FiltSampNames<-read.csv("Names_filt.csv")
-
-tab$sample.id<-FiltSampNames$Pop_ind
-
-Per_exp<-head(round(pc.percent, 2))
-
-P1_2 <- ggplot(tab, aes(EV1,EV2,color=FiltSampNames$Pop,label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="") + theme_classic()
-P3_2 <- ggplot(tab, aes(EV3,EV2,color=FiltSampNames$Pop)) +xlab(paste("PC3 (",Per_exp[3],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75) +geom_text_repel(data=tab, aes(label=sample.id), size=3)+ guides(col=FALSE)  +theme_classic()
-leg<-get_legend(P1_2+theme_classic()+theme(legend.margin=margin(t=5, r=0, b=0, l=0, unit="cm")))
-P1_2_noL <- ggplot(tab, aes(EV1,EV2,color=FiltSampNames$Pop,label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) +ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="")+ theme_classic() + guides(col=FALSE)
-plot_grid(leg,P1_2_noL, NULL, P3_2,ncol = 2, nrow = 2,rel_widths = c(1,3,3))
-
-
-
-No_Tv<-pcaC$sample.id[-c(68:77)]
-pcaC_noTv <- snpgdsPCA(AllCallAnnot,autosome.only=F,sample.id=No_Tv)
-
-pc_noTv.percent <- pcaC_noTv$varprop*100
-head(round(pc_noTv.percent, 2))
-
-tab_noTv <- data.frame(sample.id = pcaC_noTv$sample.id,
-                       EV1 = pcaC_noTv$eigenvect[,1],
-                       EV2 = pcaC_noTv$eigenvect[,2],
-                       EV3 = pcaC_noTv$eigenvect[,3],
-                       EV4 = pcaC_noTv$eigenvect[,4],
-                       EV5 = pcaC_noTv$eigenvect[,5],
-                       EV6 = pcaC_noTv$eigenvect[,6],
-                       stringsAsFactors = FALSE)
-head(tab_noTv)
-tail(tab_noTv)
-
-P1_2 <- ggplot(tab_noTv, aes(EV1,EV2,color = FiltSampNames$Pop[-c(68:77)],label=sample.id)) + xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="") + theme_classic()
-P3_2 <- ggplot(tab_noTv, aes(EV3,EV2,color = FiltSampNames$Pop[-c(68:77)])) + xlab(paste("PC3 (",Per_exp[3],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75) + geom_text_repel(data=tab_noTv, aes(label=sample.id), size=3) + guides(col=FALSE) + theme_classic()
-leg <- get_legend(P1_2 + theme_classic() + theme(legend.margin=margin(t=5, r=0, b=0, l=0, unit="cm")))
-P1_2_noL <- ggplot(tab_noTv, aes(EV1,EV2,color=FiltSampNames$Pop[-c(68:77)],label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) +ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="")+ theme_classic() + guides(col=FALSE)
-plot_grid(leg,P1_2_noL, NULL, P3_2,ncol = 2, nrow = 2,rel_widths = c(1,3,3))
-
-#######################################################
-# PCA with only non-significant outliers
-#######################################################
-
-#outlier SNPs (387 across 133 sequences) and non-outlier SNPs (2189 across 247 sequences)
-
-#Z<-Y[which(!Y@fix[,1]%in%OutLocAnnot$Annot_out),]
-
-#write.vcf(Z, file = "All.calls.FFF.recode.Annot_NRecip_TSL_NONoutliers.vcf", mask = FALSE, APPEND = FALSE)
-#vcf.fn<-"All.calls.FFF.recode.Annot_NRecip_TSL_NONoutliers.vcf"
-#snpgdsVCF2GDS(vcf.fn, "All_calls_annot_NONoutliers.gds",method = "copy.num.of.ref")
-
-#snpgdsClose(AllCallAnnot)
-AllCallAnnot <- snpgdsOpen("All_calls_annot_NONoutliers.gds")
-
-pcaC <- snpgdsPCA(AllCallAnnot,autosome.only=F)
-
-pc.percent <- pcaC$varprop*100
-head(round(pc.percent, 2))
-
-tab <- data.frame(sample.id = pcaC$sample.id,
-                  EV1 = pcaC$eigenvect[,1],
-                  EV2 = pcaC$eigenvect[,2],
-                  EV3 = pcaC$eigenvect[,3],
-                  EV4 = pcaC$eigenvect[,4],
-                  EV5 = pcaC$eigenvect[,5],
-                  EV6 = pcaC$eigenvect[,6],
-                  stringsAsFactors = FALSE)
-
-FiltSampNames<-read.csv("Names_filt.csv")
-
-tab$sample.id<-FiltSampNames$Pop_ind
-
-Per_exp<-head(round(pc.percent, 2))
-
-P1_2 <- ggplot(tab, aes(EV1,EV2,color=FiltSampNames$Pop,label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="") + theme_classic()
-P3_2 <- ggplot(tab, aes(EV3,EV2,color=FiltSampNames$Pop)) +xlab(paste("PC3 (",Per_exp[3],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75) +geom_text_repel(data=tab, aes(label=sample.id), size=3)+ guides(col=FALSE)  +theme_classic()
-leg<-get_legend(P1_2+theme_classic()+theme(legend.margin=margin(t=5, r=0, b=0, l=0, unit="cm")))
-P1_2_noL <- ggplot(tab, aes(EV1,EV2,color=FiltSampNames$Pop,label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) +ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="")+ theme_classic() + guides(col=FALSE)
-plot_grid(leg,P1_2_noL, NULL, P3_2,ncol = 2, nrow = 2,rel_widths = c(1,3,3))
-
-################################################################################
-Y<-read.vcfR("All.calls.FFF.recode.Annot_NRecip_TSL_outliers.vcf.gz")
-mito <- read.csv("Tg_outlier_sequences/Mito.csv", header=F)
-mito <- mito$V4
-M<-X[which(X@fix[,1]%in%mito),]
-
-write.vcf(M, file = "All.calls.FFF.recode.Annot_NRecip_TSL_mito.vcf", mask = FALSE, APPEND = FALSE)
-vcf.fn<-"All.calls.FFF.recode.Annot_NRecip_TSL_mito.vcf"
-snpgdsVCF2GDS(vcf.fn, "All_calls_annot_mito.gds",method = "copy.num.of.ref")
-
-AllCallAnnot <- snpgdsOpen("All_calls_annot_mito.gds")
-#snpgdsClose(AllCallAnnot)
-
-pcaC <- snpgdsPCA(AllCallAnnot,autosome.only=F)
-
-pc.percent <- pcaC$varprop*100
-head(round(pc.percent, 2))
-
-tab <- data.frame(sample.id = pcaC$sample.id,
-                  EV1 = pcaC$eigenvect[,1],
-                  EV2 = pcaC$eigenvect[,2],
-                  EV3 = pcaC$eigenvect[,3],
-                  EV4 = pcaC$eigenvect[,4],
-                  EV5 = pcaC$eigenvect[,5],
-                  EV6 = pcaC$eigenvect[,6],
-                  stringsAsFactors = FALSE)
-
-FiltSampNames<-read.csv("Names_filt.csv")
-
-tab$sample.id<-FiltSampNames$Pop_ind
-
-Per_exp<-head(round(pc.percent, 2))
-
-P1_2 <- ggplot(tab, aes(EV1,EV2,color=FiltSampNames$Pop,label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="") + theme_classic()
-P3_2 <- ggplot(tab, aes(EV3,EV2,color=FiltSampNames$Pop)) +xlab(paste("PC3 (",Per_exp[3],"%)",sep="")) + ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75) +geom_text_repel(data=tab, aes(label=sample.id), size=3)+ guides(col=FALSE)  +theme_classic()
-leg<-get_legend(P1_2+theme_classic()+theme(legend.margin=margin(t=5, r=0, b=0, l=0, unit="cm")))
-P1_2_noL <- ggplot(tab, aes(EV1,EV2,color=FiltSampNames$Pop,label=sample.id)) +xlab(paste("PC1 (",Per_exp[1],"%)",sep="")) +ylab(paste("PC2 (",Per_exp[2],"%)",sep="")) + geom_point() + stat_ellipse(level=0.75)+labs(color="")+ theme_classic() + guides(col=FALSE)
-plot_grid(leg,P1_2_noL, NULL, P3_2,ncol = 2, nrow = 2,rel_widths = c(1,3,3))
-
-#####################################################################################################
-
-Z<-read.vcfR("All.calls.FFF.recode.Annot_NRecip_TSL_NONoutliers.vcf")
-
-length(getCHROM(Y))
-length(unique(getCHROM(Y)))
-length(getCHROM(Z))
-length(unique(getCHROM(Z)))
-
-#refs<-list.files()[grep("_ref_reform.fasta",list.files())]
-
-refs<-list.files()[grep("CNS.fa",list.files())]
-out <- read.table("Outlier_fragment_names.txt")
-
-for(i in refs){
-  print(i)
-  S <- read.fasta(i)
-  Sf<-S[names(S)%in%out$V1]
-  print(paste("Lengths of filtered",i,"=",length(Sf)))
-  write.fasta(sequences=Sf, names=names(Sf), file.out=paste(substr(i,1,3),"_CNS_outliers.fas",sep=""))
-}                         
-
-write.fasta(sequences=Sf, names=names(Sf), file.out="Tg_ExoCap_orfs_outliers.fas")
-
-
-##################################################################################
-# Environmental data
-##################################################################################
-
-TP<-read.csv("SOCATv2021_TropicalPacfic.csv")
-IO<-read.csv("SOCATv2021_Indian.csv",sep="\t")
-
-Env<-merge(TP,IO,all = T)
+# setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
+# 
+# het_pops<-read.table("all_IGND_noSMALL")
+
+#setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/")
+setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
+
+require(tidyverse)
+require(vcfR)
+
+hwe <- fread("LDfilt_hardy.hwe")
+
+het <- fread("LDfilt_HET_all.het")
+
+X<-read.vcfR("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
+all_pops<-colnames(X@gt)[-1]
+
+all_pops[!all_pops%in%het$INDV]
+
+Pop <- c(rep("IS_C",25),rep("NO_C",12),rep("DK_H",5),rep("DK_C",11),rep("EE_C",3),rep("GL_C",12),rep("GL_H",8),rep("IS_H",2),rep("NO_H",13),"TU_H")
+
+het$POP<-Pop
+
+head(het)
+het$O.HET<-het$N_SITES-het$`O(HOM)`
+het$E.HET<-het$N_SITES-het$`E(HOM)`
+het$hetO_frac<-het$O.HET/het$N_SITES
+het$POP<-factor(het$POP, levels = c("GL_C","GL_H","IS_C","IS_H","NO_C","NO_H","DK_C","DK_H","EE_C","TU_H"))
+het[order(het$O.HET),]
+het[order(het$het_frac),]
+
+par(mar=c(5.2,5.2,0.2,0.2))
+boxplot(het$O.HET/het$N_SITES~het$POP, ylab = "Observed heterozygosity", xlab = "", cex.lab=3, cex.axis=2)
+mtext("Population_time", side = 1, line = 3.5, cex = 3 )
+
+par(mar=c(5.2,5.2,0.2,0.2))
+boxplot(het$E.HET/het$N_SITES~het$POP, ylab = "Expected heterozygosity", xlab = "", cex.lab=3, cex.axis=2)
+mtext("Population_time", side = 1, line = 3.5, cex = 3 )
+
+par(mar=c(5.2,5.2,0.2,0.2))
+boxplot(het$F~het$POP, ylab = "Inbreeding coefficient", xlab = "", cex.lab=3, cex.axis=2)
+mtext("Population_time", side = 1, line = 3.5, cex = 3 )
+
+#het_obs_tmp<-het[,c(1,2,3,4,6,7)]
+#het_data_obs_exp_for_ggplot<-het_obs_tmp[order(het_obs_tmp$ORDER),]
+het_data_obs_exp_for_ggplot<-het[,c(1,2,3,4,6,7)]
+het_data_obs_exp_for_ggplot$obs_or_exp<-rep("obs", 92)
+colnames(het_data_obs_exp_for_ggplot)[6]<-c("HET")
+
+#het_exp_tmp<-het_data[,c(1,2,3,4,6,8)]
+het_exp_tmp2<-het[,c(1,2,3,4,6,8)]
+het_exp_tmp2$obs_or_exp<-rep("exp", 92)
+colnames(het_exp_tmp2)[6]<-c("HET")
+
+het_inb_tmp2<-het[,c(1,2,3,4,6,5)]
+het_inb_tmp2$obs_or_exp<-rep("inb", 92)
+colnames(het_inb_tmp2)[6]<-c("HET")
+
+het_data_obs_exp_for_ggplot_true<-rbind(het_data_obs_exp_for_ggplot, het_exp_tmp2)
+
+ggplot_het_bothexpandobsandinb_090421<-
+  ggplot(het_data_obs_exp_for_ggplot_true, aes(x=POP, y=HET/N_SITES, color = obs_or_exp)) +
+  geom_boxplot() +
+  geom_boxplot(data = het_inb_tmp2, aes(x=POP, y=HET, color = obs_or_exp), fill="#636363") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
+        title = element_text(size = 16), legend.text = element_text(size = 14)) +
+  #annotate(geom= "text", x=seq_len(unique(het_data_obs_exp_for_ggplot_true$CO_TI)), y=10, label=het_data_obs_exp_for_ggplot_true$obs_or_exp) +
+  scale_color_manual(values = c( "#aaaaaa", "#000000", "#000000")) + 
+  labs(x = "Population_time", 
+       y = "Heterozygosity & Inbreeding coefficient",
+       color="") + 
+  theme(legend.position = "none")
+
+ggsave(plot = ggplot_het_bothexpandobsandinb_090421, filename = "het_plot_bothhetandobsandinb_130421.png", width = 30, height = 20, units = "cm", device = "png")
+
+het_gg_observed_090421<-
+  ggplot(het, aes(x=POP, y=O.HET/N_SITES)) + 
+  geom_boxplot() + 
+  labs(title = "", 
+       x = "Population_time", 
+       y = "Observed heterozygosity") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
+        title = element_text(size = 16), legend.text = element_text(size = 14)) +
+  scale_y_continuous(position = "left", limits = c(0.125, 0.3)) 
+
+het_gg_expected_090421<-
+  ggplot(het, aes(x=POP, y=E.HET/N_SITES), ) + 
+  geom_boxplot() + 
+  labs(title = "", 
+       x = "Population_time", 
+       y = "Expected heterozygosity") + 
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
+        title = element_text(size = 16), legend.text = element_text(size = 14)) + 
+  scale_y_continuous(position = "right", limits = c(0.125, 0.3))
+
+het_gg_2figures_090421<-
+  ggarrange(het_gg_observed_090421, het_gg_expected_090421,
+            labels = c("A", "B"),
+            ncol = 2, nrow = 1, common.legend = TRUE)
+
+het[, .(meanFIS=mean(F)), by=POP]
+het[, .(meanFIS=var(F)), by=POP]
+
+het[, .(meanE.HET=mean(E.HET)), by=POP]
+het[, .(meanE.HET=var(E.HET)), by=POP]
+
+het[, .(meanO.HET=mean(O.HET)), by=POP]
+het[, .(meanO.HET=var(O.HET)), by=POP]
+
+het[, .(meanHETfrac=mean(het_frac)), by=POP]
+
+het_data_obs_exp_for_ggplot_true
+het[, .(meanE.HET=mean(E.HET)), by=POP]
+
+
+ernir<-snpgdsOpen("ernir.gds")
+#snpgdsClose(ernir)
+ibs <- snpgdsIBS(ernir, autosome.only = F, remove.monosnp = F)
+
+IBS<-data.frame(ibs$ibs)
+colnames(IBS)<-all_pops
+rownames(IBS)<-all_pops
+
+for(i in 1:ncol(IBS)){
+    IBS[which(IBS[,i]==1.0000000),i]<-NA
+}
+
+summary(as.factor(Pop))
+mean(colMeans(IBS[Pop=="GL_C",Pop=="GL_C"],na.rm = T))
+mean(colMeans(IBS[Pop=="GL_H",Pop=="GL_H"],na.rm = T))
+mean(colMeans(IBS[Pop=="IS_C",Pop=="IS_C"],na.rm = T))
+mean(colMeans(IBS[Pop=="IS_H",Pop=="IS_H"],na.rm = T))
+mean(colMeans(IBS[Pop=="NO_C",Pop=="NO_C"],na.rm = T))
+mean(colMeans(IBS[Pop=="NO_H",Pop=="NO_H"],na.rm = T))
+mean(colMeans(IBS[Pop=="DK_C",Pop=="DK_C"],na.rm = T))
+mean(colMeans(IBS[Pop=="DK_H",Pop=="DK_H"],na.rm = T))
+mean(colMeans(IBS[Pop=="EE_C",Pop=="EE_C"],na.rm = T))
+mean(colMeans(IBS[Pop=="TU_H",Pop=="TU_H"],na.rm = T))
+
+
+hweGC <- read.table("LDfilt_hardy_GC.hwe",header = T)
+
+hardy_GL_C<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_GC.hwe")), header = T)
+hardy_GL_C$CHR <- as.numeric(revalue(hardy_GL_C$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_GL_C$bin <- hardy_GL_C$POS%/%100000
+hardy_GL_C$hetero<-hardy_GL_C$HET/(hardy_GL_C$OBS.HOM1+hardy_GL_C$HET+hardy_GL_C$HOM2.)
+hardy_GL_C_tapp_min<-tapply(hardy_GL_C$hetero, list(hardy_GL_C$CHR, hardy_GL_C$bin), quantile, p=0.05)
+hardy_GL_C_tapp_q1<-tapply(hardy_GL_C$hetero, list(hardy_GL_C$CHR, hardy_GL_C$bin), quantile, p=0.25)
+hardy_GL_C_tapp_q2<-tapply(hardy_GL_C$hetero, list(hardy_GL_C$CHR, hardy_GL_C$bin), quantile, p=0.5)
+hardy_GL_C_tapp_q3<-tapply(hardy_GL_C$hetero, list(hardy_GL_C$CHR, hardy_GL_C$bin), quantile, p=0.75)
+hardy_GL_C_tapp_max<-tapply(hardy_GL_C$hetero, list(hardy_GL_C$CHR, hardy_GL_C$bin), quantile, p=0.95)
+new.hardy_GL_C_tapp_min=as.data.frame(cbind(rep(row.names(hardy_GL_C_tapp_min),each=855),rep(0:854,each=nrow(hardy_GL_C_tapp_min)),as.numeric(t(hardy_GL_C_tapp_min))))
+new.hardy_GL_C_tapp_q1=as.data.frame(cbind(rep(row.names(hardy_GL_C_tapp_q1),each=855),rep(0:854,each=nrow(hardy_GL_C_tapp_q1)),as.numeric(t(hardy_GL_C_tapp_q1))))
+new.hardy_GL_C_tapp_q2=as.data.frame(cbind(rep(row.names(hardy_GL_C_tapp_q2),each=855),rep(0:854,each=nrow(hardy_GL_C_tapp_q2)),as.numeric(t(hardy_GL_C_tapp_q2))))
+new.hardy_GL_C_tapp_q3=as.data.frame(cbind(rep(row.names(hardy_GL_C_tapp_q3),each=855),rep(0:854,each=nrow(hardy_GL_C_tapp_q3)),as.numeric(t(hardy_GL_C_tapp_q3))))
+new.hardy_GL_C_tapp_max=as.data.frame(cbind(rep(row.names(hardy_GL_C_tapp_max),each=855),rep(0:854,each=nrow(hardy_GL_C_tapp_max)),as.numeric(t(hardy_GL_C_tapp_max))))
+bins<-rep(0:854,length.out=22230)
+table_het_per_scaf_GL_C<-new.hardy_GL_C_tapp_min
+table_het_per_scaf_GL_C$V2<-bins
+table_het_per_scaf_GL_C$V4<-new.hardy_GL_C_tapp_q1$V3
+table_het_per_scaf_GL_C$V5<-new.hardy_GL_C_tapp_q2$V3
+table_het_per_scaf_GL_C$V6<-new.hardy_GL_C_tapp_q3$V3
+table_het_per_scaf_GL_C$V7<-new.hardy_GL_C_tapp_max$V3
+colnames(table_het_per_scaf_GL_C)<-c("scaffold", "window", "5%", "25%", "mean", "75%", "95%")
+table_het_per_scaf_GL_C[table_het_per_scaf_GL_C == NA] <- NA
+#plot(table_het_per_scaf_GL_C$mean)
+table_het_per_scaf_GL_C_sub<-table_het_per_scaf_GL_C[complete.cases(table_het_per_scaf_GL_C),]
+SNP<-c(1:(nrow(table_het_per_scaf_GL_C_sub)))
+df_table_het_per_scaf_GL_C<-data.frame(SNP,table_het_per_scaf_GL_C_sub)
+df_table_het_per_scaf_GL_C$scaffold <- as.numeric(df_table_het_per_scaf_GL_C$scaffold)
+df_table_het_per_scaf_GL_C$window <- as.numeric(df_table_het_per_scaf_GL_C$window)
+df_table_het_per_scaf_GL_C$mean <- as.numeric(df_table_het_per_scaf_GL_C$mean)
+manhattan(df_table_het_per_scaf_GL_C, chr="scaffold", bp="window", p="mean", snp="SNP", logp=FALSE, ylab="Heterozygosity in windows of 100K SNPs")
+
+hardy_GL_C<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_GC.hwe")), header = T)
+hardy_GL_C$hetero<-hardy_GL_C$HET/(hardy_GL_C$OBS.HOM1+hardy_GL_C$HET+hardy_GL_C$HOM2.)
+hardy_GL_C$hetero_exp<-hardy_GL_C$HET.1/(hardy_GL_C$E.HOM1+hardy_GL_C$HET.1+hardy_GL_C$HOM2..1)
+hardy_GL_C$CHR <- as.numeric(revalue(hardy_GL_C$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_GL_H<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_GH.hwe")), header = T)
+hardy_GL_H$hetero<-hardy_GL_H$HET/(hardy_GL_H$OBS.HOM1+hardy_GL_H$HET+hardy_GL_H$HOM2.)
+hardy_GL_H$hetero_exp<-hardy_GL_H$HET.1/(hardy_GL_H$E.HOM1+hardy_GL_H$HET.1+hardy_GL_H$HOM2..1)
+hardy_GL_H$CHR <- as.numeric(revalue(hardy_GL_H$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_IS_C<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_IC.hwe")), header = T)
+hardy_IS_C$hetero<-hardy_IS_C$HET/(hardy_IS_C$OBS.HOM1+hardy_IS_C$HET+hardy_IS_C$HOM2.)
+hardy_IS_C$hetero_exp<-hardy_IS_C$HET.1/(hardy_IS_C$E.HOM1+hardy_IS_C$HET.1+hardy_IS_C$HOM2..1)
+hardy_IS_C$CHR <- as.numeric(revalue(hardy_IS_C$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_IS_H<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_IH.hwe")), header = T)
+hardy_IS_H$hetero<-hardy_IS_H$HET/(hardy_IS_H$OBS.HOM1+hardy_IS_H$HET+hardy_IS_H$HOM2.)
+hardy_IS_H$hetero_exp<-hardy_IS_H$HET.1/(hardy_IS_H$E.HOM1+hardy_IS_H$HET.1+hardy_IS_H$HOM2..1)
+hardy_IS_H$CHR <- as.numeric(revalue(hardy_IS_H$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_NO_C<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_NC.hwe")), header = T)
+hardy_NO_C$hetero<-hardy_NO_C$HET/(hardy_NO_C$OBS.HOM1+hardy_NO_C$HET+hardy_NO_C$HOM2.)
+hardy_NO_C$hetero_exp<-hardy_NO_C$HET.1/(hardy_NO_C$E.HOM1+hardy_NO_C$HET.1+hardy_NO_C$HOM2..1)
+hardy_NO_C$CHR <- as.numeric(revalue(hardy_NO_C$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_NO_H<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_NH.hwe")), header = T)
+hardy_NO_H$hetero<-hardy_NO_H$HET/(hardy_NO_H$OBS.HOM1+hardy_NO_H$HET+hardy_NO_H$HOM2.)
+hardy_NO_H$hetero_exp<-hardy_NO_H$HET.1/(hardy_NO_H$E.HOM1+hardy_NO_H$HET.1+hardy_NO_H$HOM2..1)
+hardy_NO_H$CHR <- as.numeric(revalue(hardy_NO_H$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_DK_C<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_DC.hwe")), header = T)
+hardy_DK_C$hetero<-hardy_DK_C$HET/(hardy_DK_C$OBS.HOM1+hardy_DK_C$HET+hardy_DK_C$HOM2.)
+hardy_DK_C$hetero_exp<-hardy_DK_C$HET.1/(hardy_DK_C$E.HOM1+hardy_DK_C$HET.1+hardy_DK_C$HOM2..1)
+hardy_DK_C$CHR <- as.numeric(revalue(hardy_DK_C$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_DK_H<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_DH.hwe")), header = T)
+hardy_DK_H$hetero<-hardy_DK_H$HET/(hardy_DK_H$OBS.HOM1+hardy_DK_H$HET+hardy_DK_H$HOM2.)
+hardy_DK_H$hetero_exp<-hardy_DK_H$HET.1/(hardy_DK_H$E.HOM1+hardy_DK_H$HET.1+hardy_DK_H$HOM2..1)
+hardy_DK_H$CHR <- as.numeric(revalue(hardy_DK_H$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_EE_C<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_EC.hwe")), header = T)
+hardy_EE_C$hetero<-hardy_EE_C$HET/(hardy_EE_C$OBS.HOM1+hardy_EE_C$HET+hardy_EE_C$HOM2.)
+hardy_EE_C$hetero_exp<-hardy_EE_C$HET.1/(hardy_EE_C$E.HOM1+hardy_EE_C$HET.1+hardy_EE_C$HOM2..1)
+hardy_EE_C$CHR <- as.numeric(revalue(hardy_EE_C$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+hardy_TU_H<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy_TH.hwe")), header = T)
+hardy_TU_H$hetero<-hardy_TU_H$HET/(hardy_TU_H$OBS.HOM1+hardy_TU_H$HET+hardy_TU_H$HOM2.)
+hardy_TU_H$hetero_exp<-hardy_TU_H$HET.1/(hardy_TU_H$E.HOM1+hardy_TU_H$HET.1+hardy_TU_H$HOM2..1)
+hardy_TU_H$CHR <- as.numeric(revalue(hardy_TU_H$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+
+
+#pdf("Heterozygosity_mean_along_chromosome_10pops_030621.pdf", width=13, height=8)
+par(mfrow=c(5,2))
+par(mar=c(2.5,2.5,1.5,0.5))
+boxplot(hetero~CHR,data=hardy_GL_C, ylab="", xlab="", cex.axis=1.5)
+title("A", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_GL_H, ylab="", xlab="", cex.axis=1.5)
+title("B", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_IS_C, ylab="", xlab="", cex.axis=1.5)
+title("C", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_IS_H, ylab="", xlab="", cex.axis=1.5)
+title("D", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_NO_C, ylab="", xlab="", cex.axis=1.5)
+title("E", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_NO_H, ylab="", xlab="", cex.axis=1.5)
+title("F", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_DK_C, ylab="", xlab="", cex.axis=1.5)
+title("G", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_DK_H, ylab="", xlab="", cex.axis=1.5)
+title("H", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_EE_C, ylab="", xlab="", cex.axis=1.5)
+title("I", adj=0.02, line = 0.5)
+boxplot(hetero~CHR,data=hardy_TU_H, ylab="", xlab="", cex.axis=1.5)
+title("J", adj=0.02, line = 0.5)
+dev.off()
+
+cumsum_hardy_GL_C<-cumsum(sort(na.omit(hardy_GL_C$P_HWE)))
+cumsum_hardy_GL_H<-cumsum(sort(na.omit(hardy_GL_H$P_HWE)))
+cumsum_hardy_IS_C<-cumsum(sort(na.omit(hardy_IS_C$P_HWE)))
+cumsum_hardy_IS_H<-cumsum(sort(na.omit(hardy_IS_H$P_HWE)))
+cumsum_hardy_NO_C<-cumsum(sort(na.omit(hardy_NO_C$P_HWE)))
+cumsum_hardy_NO_H<-cumsum(sort(na.omit(hardy_NO_H$P_HWE)))
+cumsum_hardy_DK_C<-cumsum(sort(na.omit(hardy_DK_C$P_HWE)))
+cumsum_hardy_DK_H<-cumsum(sort(na.omit(hardy_DK_H$P_HWE)))
+cumsum_hardy_EE_C<-cumsum(sort(na.omit(hardy_EE_C$P_HWE)))
+cumsum_hardy_TU_H<-cumsum(sort(na.omit(hardy_TU_H$P_HWE)))
+
+mean(na.omit(hardy_GL_C$hetero))
+mean(na.omit(hardy_GL_H$hetero))
+mean(na.omit(hardy_IS_C$hetero))
+mean(na.omit(hardy_IS_H$hetero))
+mean(na.omit(hardy_NO_C$hetero))
+mean(na.omit(hardy_NO_H$hetero))
+mean(na.omit(hardy_DK_C$hetero))
+mean(na.omit(hardy_DK_H$hetero))
+mean(na.omit(hardy_EE_C$hetero))
+mean(na.omit(hardy_TU_H$hetero))
+
+var(na.omit(hardy_GL_C$hetero))
+var(na.omit(hardy_GL_H$hetero))
+var(na.omit(hardy_IS_C$hetero))
+var(na.omit(hardy_IS_H$hetero))
+var(na.omit(hardy_NO_C$hetero))
+var(na.omit(hardy_NO_H$hetero))
+var(na.omit(hardy_DK_C$hetero))
+var(na.omit(hardy_DK_H$hetero))
+var(na.omit(hardy_EE_C$hetero))
+var(na.omit(hardy_TU_H$hetero))
+
+mean(na.omit(hardy_GL_C$hetero_exp))
+mean(na.omit(hardy_GL_H$hetero_exp))
+mean(na.omit(hardy_IS_C$hetero_exp))
+mean(na.omit(hardy_IS_H$hetero_exp))
+mean(na.omit(hardy_NO_C$hetero_exp))
+mean(na.omit(hardy_NO_H$hetero_exp))
+mean(na.omit(hardy_DK_C$hetero_exp))
+mean(na.omit(hardy_DK_H$hetero_exp))
+mean(na.omit(hardy_EE_C$hetero_exp))
+mean(na.omit(hardy_TU_H$hetero_exp))
+
+var(na.omit(hardy_GL_C$hetero_exp))
+var(na.omit(hardy_GL_H$hetero_exp))
+var(na.omit(hardy_IS_C$hetero_exp))
+var(na.omit(hardy_IS_H$hetero_exp))
+var(na.omit(hardy_NO_C$hetero_exp))
+var(na.omit(hardy_NO_H$hetero_exp))
+var(na.omit(hardy_DK_C$hetero_exp))
+var(na.omit(hardy_DK_H$hetero_exp))
+var(na.omit(hardy_EE_C$hetero_exp))
+var(na.omit(hardy_TU_H$hetero_exp))
 
