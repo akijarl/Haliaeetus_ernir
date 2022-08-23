@@ -281,6 +281,7 @@ out_trim <- OutFLANK(my_fst[ind.keep,], NumberOfSamples=length(unique(pop)), qth
 str(out_trim)
 head(out_trim$results)
 summary(out_trim$results$OutlierFlag)
+summary(out_trim$results$pvaluesRightTail)
 
 OutFLANKResultsPlotter(out_trim, withOutliers = TRUE,
                        NoCorr = TRUE, Hmin = 0.01, binwidth = 0.01, Zoom =
@@ -323,6 +324,7 @@ setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
 
 require(tidyverse)
 require(vcfR)
+
 
 hwe <- fread("LDfilt_hardy.hwe")
 

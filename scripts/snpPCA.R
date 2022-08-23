@@ -1,4 +1,4 @@
-setwd("~/Documents/UI/rannsoknir/")
+setwd("~/Documents/UI/rannsoknir/Haliaeetus/")
 library(gdsfmt)
 require(SNPRelate)
 require(adegenet)
