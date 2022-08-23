@@ -1,4 +1,4 @@
-setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/smcpp_output/")
+setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/")
 require(ggplot2)
 
 GC1<-read.csv("Greenland_con1.csv")
@@ -36,7 +36,7 @@ GC10$replicate<-"J"
 
 GC<-rbind(GC1,GC2,GC3,GC4,GC5,GC6,GC7,GC8,GC9,GC10)
 #GC<-rbind(GC2,GC3,GC6)
-GC<-rbind(GC1,GC4,GC5,GC7,GC8,GC9,GC10)
+#GC<-rbind(GC1,GC4,GC5,GC7,GC8,GC9,GC10)
 
 #summary(GC$x)
 #[GC$x>100,]
