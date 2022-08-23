@@ -127,9 +127,12 @@ DC<-rbind(DC1,DC2,DC3,DC4,DC5,DC6,DC7,DC8,DC9,DC10)
 Con <- rbind(IC,GC,NC,DC)
 
 ggplot(Con[Con$x>100,])+
-  geom_line(aes(x,log10(y),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
-  coord_cartesian(xlim=c(0,200000),ylim=c(0,5))+
+  geom_line(aes(x,y/1000,colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,300000))+
   scale_linetype_manual(values = rep("solid",10),guide="none")+
-  scale_color_manual(values = c("blue","green","red","orange"))+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
   theme_classic()
 
