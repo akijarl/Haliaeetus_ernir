@@ -24,16 +24,6 @@ GC9$replicate<-"I"
 GC10$replicate<-"J"
 
 GC<-rbind(GC1,GC2,GC3,GC4,GC5,GC6,GC7,GC8,GC9,GC10)
-#GC<-rbind(GC2,GC3,GC6)
-#GC<-rbind(GC1,GC4,GC5,GC7,GC8,GC9,GC10)
-
-#summary(GC$x)
-#[GC$x>100,]
-ggplot(GC)+
-  geom_line(aes(x,log10(y),colour=replicate))+
-  #coord_cartesian(xlim=c(0,100000),ylim=c(0,5))+
-  scale_color_manual(values = rep("orange",10),guide="none")+
-  theme_classic()
 
 IC1<-read.csv("Iceland_con1.csv")
 IC2<-read.csv("Iceland_con2.csv")
@@ -402,11 +392,33 @@ ggplot(His[His$x>100,])+
   theme_classic()
 
 ggplot(His[His$x>100,])+
-  geom_line(aes(x,y/1000,colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
   xlab("Years ago")+
   ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,300000))+
+  coord_cartesian(xlim=c(0,350000),ylim=c(0,30))+
   scale_linetype_manual(values = rep("solid",10),guide="none")+
-  scale_color_manual(name="Sample",values = c("blue","green","red","orange"))+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange","black"), labels=c("Denmark","Greenland","Iceland","Norway","Turkey"))+
   guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  theme_classic()
+  scale_x_continuous(breaks = c(seq(1000,351000,50000)))+
+  geom_vline(xintercept=10000,lty=1)+
+  geom_vline(xintercept=25000,lty=2)+
+  geom_vline(xintercept=110000,lty=3)+
+  geom_vline(xintercept=150000,lty=3)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+ggplot(His[His$x>100,])+
+  geom_line(aes(x*1.56,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,150000),ylim=c(0,30))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange","black"), labels=c("Denmark","Greenland","Iceland","Norway","Turkey"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(seq(1000,151000,5000)))+
+  geom_vline(xintercept=10000,lty=1)+
+  geom_vline(xintercept=25000,lty=2)+
+  geom_vline(xintercept=110000,lty=3)+
+  geom_vline(xintercept=150000,lty=3)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))

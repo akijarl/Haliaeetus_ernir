@@ -181,10 +181,7 @@ table(as.vector(G))
 
 #G[is.na(G)]<-9
 
-
-
 #table(as.vector(geno[nll,]))
-
 
 #dat<-list(chromosome,position,G,pop,ind)
 
@@ -324,7 +321,6 @@ setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
 
 require(tidyverse)
 require(vcfR)
-
 
 hwe <- fread("LDfilt_hardy.hwe")
 
