@@ -281,6 +281,7 @@ out_trim <- OutFLANK(my_fst[ind.keep,], NumberOfSamples=length(unique(pop)), qth
 str(out_trim)
 head(out_trim$results)
 summary(out_trim$results$OutlierFlag)
+summary(out_trim$results$pvaluesRightTail)
 
 OutFLANKResultsPlotter(out_trim, withOutliers = TRUE,
                        NoCorr = TRUE, Hmin = 0.01, binwidth = 0.01, Zoom =
@@ -324,6 +325,7 @@ setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
 require(tidyverse)
 require(vcfR)
 
+
 hwe <- fread("LDfilt_hardy.hwe")
 
 het <- fread("LDfilt_HET_all.het")
@@ -341,11 +343,9 @@ head(het)
 het$O.HET<-het$N_SITES-het$`O(HOM)`
 het$E.HET<-het$N_SITES-het$`E(HOM)`
 het$hetO_frac<-het$O.HET/het$N_SITES
-het$hetE_frac<-het$E.HET/het$N_SITES
 het$POP<-factor(het$POP, levels = c("GL_C","GL_H","IS_C","IS_H","NO_C","NO_H","DK_C","DK_H","EE_C","TU_H"))
 het[order(het$O.HET),]
-het[order(het$hetO_frac),]
-het[order(het$hetE_frac),]
+het[order(het$het_frac),]
 
 par(mar=c(5.2,5.2,0.2,0.2))
 boxplot(het$O.HET/het$N_SITES~het$POP, ylab = "Observed heterozygosity", xlab = "", cex.lab=3, cex.axis=2)
@@ -416,28 +416,20 @@ het_gg_2figures_090421<-
             labels = c("A", "B"),
             ncol = 2, nrow = 1, common.legend = TRUE)
 
-het[, .(meanFIS=mean(F))]
-
 het[, .(meanFIS=mean(F)), by=POP]
-het[, .(varFIS=var(F)), by=POP]
+het[, .(meanFIS=var(F)), by=POP]
 
 het[, .(meanE.HET=mean(E.HET)), by=POP]
-het[, .(varE.HET=var(E.HET)), by=POP]
+het[, .(meanE.HET=var(E.HET)), by=POP]
 
 het[, .(meanO.HET=mean(O.HET)), by=POP]
-het[, .(varO.HET=var(O.HET)), by=POP]
+het[, .(meanO.HET=var(O.HET)), by=POP]
 
-het[, .(meanHETfrac=mean(hetO_frac))]
-het[, .(meanHETfrac=mean(hetE_frac))]
+het[, .(meanHETfrac=mean(het_frac)), by=POP]
 
-het[, .(meanHETfrac=mean(hetO_frac)), by=POP]
-het[, .(varHETfrac=mean(hetE_frac)), by=POP]
+het_data_obs_exp_for_ggplot_true
+het[, .(meanE.HET=mean(E.HET)), by=POP]
 
-het[, .(varHETfrac=var(hetO_frac))]
-het[, .(varHETfrac=var(hetE_frac))]
-
-het[, .(varHETfrac=var(hetO_frac)), by=POP]
-het[, .(varHETfrac=var(hetE_frac)), by=POP]
 
 ernir<-snpgdsOpen("ernir.gds")
 #snpgdsClose(ernir)
@@ -451,8 +443,16 @@ for(i in 1:ncol(IBS)){
     IBS[which(IBS[,i]==1.0000000),i]<-NA
 }
 
+POP<-as.factor(Pop)
+Pop_col<-c(rep("red",25),rep("orange",12),rep("cyan",5),rep("blue",11),rep("black",3),rep("green",12),rep("lightgreen",8),rep("pink",2),rep("yellow",13),"grey")
+loc <- cmdscale(1 - ibs$ibs, k = 2)
+x <- loc[, 1]; y <- loc[, 2]
+race <- as.factor(read.gdsn(index.gdsn(genofile, "sample.annot/pop.group")))
+plot(x, y, col=Pop_col, xlab = "", ylab = "", main = "cmdscale(IBS Distance)",pch=16,cex=2)
+legend("topleft", legend=unique(Pop), text.col=c("red", "orange", "cyan","blue","black","green","lightgreen","pink","yellow","grey"))
+
+
 summary(as.factor(Pop))
-mean(colMeans(IBS,na.rm = T))
 mean(colMeans(IBS[Pop=="GL_C",Pop=="GL_C"],na.rm = T))
 mean(colMeans(IBS[Pop=="GL_H",Pop=="GL_H"],na.rm = T))
 mean(colMeans(IBS[Pop=="IS_C",Pop=="IS_C"],na.rm = T))
