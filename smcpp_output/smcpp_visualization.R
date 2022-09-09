@@ -422,3 +422,149 @@ ggplot(His[His$x>100,])+
   geom_vline(xintercept=150000,lty=3)+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+
+setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/Split/")
+require(ggplot2)
+
+IM1<-read.csv("Mall_IC_split_g10_1.csv")
+IM2<-read.csv("Mall_IC_split_g10_2.csv")
+IM3<-read.csv("Mall_IC_split_g10_3.csv")
+IM4<-read.csv("Mall_IC_split_g10_4.csv")
+IM5<-read.csv("Mall_IC_split_g10_5.csv")
+IM6<-read.csv("Mall_IC_split_g10_6.csv")
+IM7<-read.csv("Mall_IC_split_g10_7.csv")
+IM8<-read.csv("Mall_IC_split_g10_8.csv")
+IM9<-read.csv("Mall_IC_split_g10_9.csv")
+IM10<-read.csv("Mainland_IC_split_g10.csv")
+
+IM1$replicate<-"A"
+IM2$replicate<-"B"
+IM3$replicate<-"C"
+IM4$replicate<-"D"
+IM5$replicate<-"E"
+IM6$replicate<-"F"
+IM7$replicate<-"G"
+IM8$replicate<-"H"
+IM9$replicate<-"I"
+IM10$replicate<-"J"
+
+IM<-rbind(IM1,IM2,IM3,IM4,IM5,IM6,IM7,IM8,IM9,IM10)
+
+ggplot(IM[IM$x>100,])+
+  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,35000),ylim=c(0,30))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("red","black"), labels=c("Iceland","Mainland (all)"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(100,seq(1000,36000,1000)))+
+  geom_vline(xintercept=max(IM1[IM1$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM2[IM2$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM3[IM3$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM4[IM4$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM5[IM5$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM6[IM6$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM7[IM7$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM8[IM8$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM9[IM9$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(IM10[IM10$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+
+ID1<-read.csv("ECDHTH_IC_split_g10.2.csv")
+ID2<-read.csv("ECDHTH_IC_split1_g10.csv")
+ID3<-read.csv("ECDHTH_IC_split2_g10.csv")
+ID4<-read.csv("ECDHTH_IC_split3_g10.csv")
+ID5<-read.csv("ECDHTH_IC_split4_g10.csv")
+ID6<-read.csv("ECDHTH_IC_split5_g10.csv")
+ID7<-read.csv("ECDHTH_IC_split6_g10.csv")
+ID8<-read.csv("ECDHTH_IC_split7_g10.csv")
+ID9<-read.csv("ECDHTH_IC_split8_g10.csv")
+ID10<-read.csv("ECDHTH_IC_split9_g10.csv")
+
+ID1$replicate<-"A"
+ID2$replicate<-"B"
+ID3$replicate<-"C"
+ID4$replicate<-"D"
+ID5$replicate<-"E"
+ID6$replicate<-"F"
+ID7$replicate<-"G"
+ID8$replicate<-"H"
+ID9$replicate<-"I"
+ID10$replicate<-"J"
+
+ID<-rbind(ID1,ID2,ID3,ID4,ID5,ID6,ID7,ID8,ID9,ID10)
+
+ggplot(ID[ID$x>100,])+
+  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,35000),ylim=c(0,30))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("red","black"), labels=c("Iceland","Central Europe (EE,DH,TH)"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(100,seq(1000,36000,1000)))+
+  geom_vline(xintercept=max(ID1[ID1$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID2[ID2$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID3[ID3$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID4[ID4$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID5[ID5$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID6[ID6$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID7[ID7$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID8[ID8$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID9[ID9$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(ID10[ID10$label=="Iceland_con",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+
+
+
+GD1<-read.csv("ECDHTH_GC_split_g10_1.csv")
+GD2<-read.csv("ECDHTH_GC_split_g10_2.csv")
+GD3<-read.csv("ECDHTH_GC_split_g10_3.csv")
+GD4<-read.csv("ECDHTH_GC_split_g10_4.csv")
+GD5<-read.csv("ECDHTH_GC_split_g10_5.csv")
+GD6<-read.csv("ECDHTH_GC_split_g10_6.csv")
+GD7<-read.csv("ECDHTH_GC_split_g10_7.csv")
+GD8<-read.csv("ECDHTH_GC_split_g10_8.csv")
+GD9<-read.csv("ECDHTH_GC_split_g10_9.csv")
+GD10<-read.csv("ECDHTH_GC_split_g10_10.csv")
+
+GD1$replicate<-"A"
+GD2$replicate<-"B"
+GD3$replicate<-"C"
+GD4$replicate<-"D"
+GD5$replicate<-"E"
+GD6$replicate<-"F"
+GD7$replicate<-"G"
+GD8$replicate<-"H"
+GD9$replicate<-"I"
+GD10$replicate<-"J"
+
+GD<-rbind(GD1,GD2,GD3,GD4,GD5,GD6,GD7,GD8,GD9,GD10)
+
+ggplot(GD[GD$x>100,])+
+  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,35000),ylim=c(0,30))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("green","black"), labels=c("Greenland","Central Europe (EE,DH,TH)"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(100,seq(1000,36000,1000)))+
+  geom_vline(xintercept=max(GD1[GD1$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD2[GD2$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD3[GD3$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD4[GD4$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD5[GD5$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD6[GD6$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD7[GD7$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD8[GD8$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD9[GD9$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(GD10[GD10$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
