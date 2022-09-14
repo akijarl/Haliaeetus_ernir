@@ -1,0 +1,24 @@
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf.gz
+	--keep T_H
+	--hardy
+	--out LDfilt_hardy_TH
+
+Using zlib version: 1.2.7
+Warning: Expected at least 2 parts in INFO entry: ID=NCLUSTERS,Number=1,Type=Integer,Description="Number of SV candidates in cluster, as reported by popSVar.">
+Warning: Expected at least 2 parts in INFO entry: ID=NGT,Number=3,Type=Integer,Description="Number of REF/REF, REF/ALT and ALT/ALTgenotypes, respectively.">
+Warning: Expected at least 2 parts in INFO entry: ID=NGT,Number=3,Type=Integer,Description="Number of REF/REF, REF/ALT and ALT/ALTgenotypes, respectively.">
+Warning: Expected at least 2 parts in INFO entry: ID=PS,Number=1,Type=Integer,Description="Unique ID of the phase set this variantis a member of. If the calls are unphased, it is used to represent which haplotype set the variant is a member of.">
+Warning: Expected at least 2 parts in INFO entry: ID=SB,Number=1,Type=Float,Description="Strand bias (F/(F+R)) where F and R are forward and reverse strands, respectively. -1 if not available.">
+Warning: Expected at least 2 parts in INFO entry: ID=VarType,Number=1,Type=String,Description="First letter is program identifier,the second letter is variant type.">
+Warning: Expected at least 2 parts in FORMAT entry: ID=RA,Number=2,Type=Integer,Description="Total read depth of the reference allele and all alternative alleles, including reads that support more than one allele.">
+Keeping individuals in 'keep' list
+After filtering, kept 1 out of 92 Individuals
+Outputting HWE statistics (but only for biallelic loci)
+	HWE: Only using biallelic SNPs.
+After filtering, kept 218126 out of a possible 218126 Sites
+Run Time = 8.00 seconds
