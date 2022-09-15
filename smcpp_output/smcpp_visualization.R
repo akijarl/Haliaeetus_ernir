@@ -568,3 +568,101 @@ ggplot(GD[GD$x>100,])+
   geom_vline(xintercept=max(GD10[GD10$label=="Greenland_contemporary",]$x),lwd=1.5,alpha=0.1,color="blue")+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+
+
+
+CEN1<-read.csv("CE_Nor_split_g10_1.csv")
+CEN2<-read.csv("CE_Nor_split_g10_2.csv")
+CEN3<-read.csv("CE_Nor_split_g10_3.csv")
+CEN4<-read.csv("CE_Nor_split_g10_4.csv")
+CEN5<-read.csv("CE_Nor_split_g10_5.csv")
+CEN6<-read.csv("CE_Nor_split_g10_6.csv")
+CEN7<-read.csv("CE_Nor_split_g10_7.csv")
+CEN8<-read.csv("CE_Nor_split_g10_8.csv")
+CEN9<-read.csv("CE_Nor_split_g10_9.csv")
+CEN10<-read.csv("CE_Nor_split_g10_10.csv")
+
+CEN1$replicate<-"A"
+CEN2$replicate<-"B"
+CEN3$replicate<-"C"
+CEN4$replicate<-"D"
+CEN5$replicate<-"E"
+CEN6$replicate<-"F"
+CEN7$replicate<-"G"
+CEN8$replicate<-"H"
+CEN9$replicate<-"I"
+CEN10$replicate<-"J"
+
+CEN<-rbind(CEN1,CEN2,CEN3,CEN4,CEN5,CEN6,CEN7,CEN8,CEN9,CEN10)
+
+
+ggplot(CEN[CEN$x>100,])+
+  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,7000),ylim=c(0,30))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("black","orange"), labels=c("Central Europe (DC,DH,EE,TH)","Norway"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(100,seq(1000,7000,1000)))+
+  geom_vline(xintercept=max(CEN1[CEN1$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN2[CEN2$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN3[CEN3$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN4[CEN4$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN5[CEN5$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN6[CEN6$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN7[CEN7$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN8[CEN8$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN9[CEN9$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(CEN10[CEN10$label=="Norway_all",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+
+MIS1<-read.csv("Mainland_Island_split_g10_1.csv")
+MIS2<-read.csv("Mainland_Island_split_g10_2.csv")
+MIS3<-read.csv("Mainland_Island_split_g10_3.csv")
+MIS4<-read.csv("Mainland_Island_split_g10_4.csv")
+MIS5<-read.csv("Mainland_Island_split_g10_5.csv")
+MIS6<-read.csv("Mainland_Island_split_g10_6.csv")
+MIS7<-read.csv("Mainland_Island_split_g10_7.csv")
+MIS8<-read.csv("Mainland_Island_split_g10_8.csv")
+MIS9<-read.csv("Mainland_Island_split_g10_9.csv")
+MIS10<-read.csv("Mainland_Island_split_g10_10.csv")
+
+MIS1$replicate<-"A"
+MIS2$replicate<-"B"
+MIS3$replicate<-"C"
+MIS4$replicate<-"D"
+MIS5$replicate<-"E"
+MIS6$replicate<-"F"
+MIS7$replicate<-"G"
+MIS8$replicate<-"H"
+MIS9$replicate<-"I"
+MIS10$replicate<-"J"
+
+MIS<-rbind(MIS1,MIS2,MIS3,MIS4,MIS5,MIS6,MIS7,MIS8,MIS9,MIS10)
+
+[MIS$x>100,]
+ggplot(MIS)+
+  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  #coord_cartesian(xlim=c(0,7000),ylim=c(0,30))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  #scale_color_manual(name="Sample",values = c("black","red"), labels=c("Mainland (NC,NH,DC,DH,EE,TH)","Islands"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  #scale_x_continuous(breaks = c(100,seq(1000,7000,1000)))+
+  geom_vline(xintercept=max(MIS1[MIS1$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS2[MIS2$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS3[MIS3$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS4[MIS4$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS5[MIS5$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS6[MIS6$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS7[MIS7$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS8[MIS8$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS9[MIS9$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  geom_vline(xintercept=max(MIS10[MIS10$label=="Islands",]$x),lwd=1.5,alpha=0.1,color="blue")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
