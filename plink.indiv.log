@@ -1,0 +1,32 @@
+PLINK v1.90p 64-bit (3 Nov 2020)
+Options in effect:
+  --bfile all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134
+  --homozyg-density 200
+  --homozyg-gap 1000
+  --homozyg-kb 500
+  --homozyg-snp 30
+  --homozyg-window-het 1
+  --homozyg-window-missing 10
+  --homozyg-window-snp 10
+
+Hostname: snaebjorn-askja
+Working directory: /home/aki
+Start time: Wed Sep 21 15:41:51 2022
+
+Random number seed: 1663774911
+64339 MB RAM detected; reserving 32169 MB for main workspace.
+218126 variants loaded from .bim file.
+92 people (0 males, 0 females, 92 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to plink.nosex .
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 92 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Warning: Nonmissing nonmale Y chromosome genotype(s) present; many commands
+treat these as missing.
+Total genotyping rate is 0.803188.
+218126 variants and 92 people pass filters and QC.
+Note: No phenotypes present.
+--homozyg: Scan complete, found 19948 ROH.
+Results saved to plink.hom + plink.hom.indiv + plink.hom.summary .
+
+End time: Wed Sep 21 15:41:51 2022

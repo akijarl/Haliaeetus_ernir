@@ -320,6 +320,7 @@ for(i in chrom_out){
 setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
 
 require(tidyverse)
+require(data.table)
 require(vcfR)
 
 hwe <- fread("LDfilt_hardy.hwe")
@@ -378,7 +379,7 @@ ggplot_het_bothexpandobsandinb_090421<-
   geom_boxplot(data = het_inb_tmp2, aes(x=POP, y=HET, color = obs_or_exp), fill="#636363") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
         title = element_text(size = 16), legend.text = element_text(size = 14)) +
-  #annotate(geom= "text", x=seq_len(unique(het_data_obs_exp_for_ggplot_true$CO_TI)), y=10, label=het_data_obs_exp_for_ggplot_true$obs_or_exp) +
+  #annotate(geom= "text", x=seq_len(unique(het_data_obs_exp_for_ggplot_true$POP)), y=10, label=het_data_obs_exp_for_ggplot_true$obs_or_exp) +
   scale_color_manual(values = c( "#aaaaaa", "#000000", "#000000")) + 
   labs(x = "Population_time", 
        y = "Heterozygosity & Inbreeding coefficient",
@@ -426,7 +427,19 @@ het[, .(meanHETfrac=mean(het_frac)), by=POP]
 het_data_obs_exp_for_ggplot_true
 het[, .(meanE.HET=mean(E.HET)), by=POP]
 
+wilcox.test(het$hetO_frac[het$POP=="GL_C"], het$hetO_frac[het$POP=="GL_H"], exact = T)
+wilcox.test(het$hetO_frac[het$POP=="IS_C"], het$hetO_frac[het$POP=="IS_H"], exact = T)
+wilcox.test(het$hetO_frac[het$POP=="NO_C"], het$hetO_frac[het$POP=="NO_H"], exact = T)
+wilcox.test(het$hetO_frac[het$POP=="DK_C"], het$hetO_frac[het$POP=="DK_H"], exact = T)
 
+wilcox.test(het$hetO_frac[het$POP=="NO_C" |het$POP=="NO_H" |
+                                het$POP=="DK_C" |het$POP=="NO_H" | 
+                                het$POP=="EE_C"| het$POP=="TU"], 
+            het$hetO_frac[het$POP=="GL_C" | het$POP=="GL_H" |
+                                het$POP=="IS_C" | het$POP=="IS_H"
+            ], exact = T)
+
+## IBS
 ernir<-snpgdsOpen("ernir.gds")
 #snpgdsClose(ernir)
 ibs <- snpgdsIBS(ernir, autosome.only = F, remove.monosnp = F)
@@ -451,6 +464,9 @@ mean(colMeans(IBS[Pop=="DK_H",Pop=="DK_H"],na.rm = T))
 mean(colMeans(IBS[Pop=="EE_C",Pop=="EE_C"],na.rm = T))
 mean(colMeans(IBS[Pop=="TU_H",Pop=="TU_H"],na.rm = T))
 
+
+require(plyr)
+require(qqman)
 
 hweGC <- read.table("LDfilt_hardy_GC.hwe",header = T)
 
@@ -564,6 +580,12 @@ cumsum_hardy_DK_H<-cumsum(sort(na.omit(hardy_DK_H$P_HWE)))
 cumsum_hardy_EE_C<-cumsum(sort(na.omit(hardy_EE_C$P_HWE)))
 cumsum_hardy_TU_H<-cumsum(sort(na.omit(hardy_TU_H$P_HWE)))
 
+hardy_all<-read.table(text = gsub("/", "\t", readLines("LDfilt_hardy.hwe")), header = T)
+hardy_all$hetero<-hardy_all$HET/(hardy_all$OBS.HOM1+hardy_all$HET+hardy_all$HOM2.)
+hardy_all$hetero_exp<-hardy_all$HET.1/(hardy_all$E.HOM1+hardy_all$HET.1+hardy_all$HOM2..1)
+hardy_all$CHR <- as.numeric(revalue(hardy_all$CHR, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26")))
+
+
 mean(na.omit(hardy_GL_C$hetero))
 mean(na.omit(hardy_GL_H$hetero))
 mean(na.omit(hardy_IS_C$hetero))
@@ -574,6 +596,8 @@ mean(na.omit(hardy_DK_C$hetero))
 mean(na.omit(hardy_DK_H$hetero))
 mean(na.omit(hardy_EE_C$hetero))
 mean(na.omit(hardy_TU_H$hetero))
+
+mean(na.omit(hardy_all$hetero))
 
 var(na.omit(hardy_GL_C$hetero))
 var(na.omit(hardy_GL_H$hetero))
@@ -586,6 +610,8 @@ var(na.omit(hardy_DK_H$hetero))
 var(na.omit(hardy_EE_C$hetero))
 var(na.omit(hardy_TU_H$hetero))
 
+var(na.omit(hardy_all$hetero))
+
 mean(na.omit(hardy_GL_C$hetero_exp))
 mean(na.omit(hardy_GL_H$hetero_exp))
 mean(na.omit(hardy_IS_C$hetero_exp))
@@ -596,6 +622,8 @@ mean(na.omit(hardy_DK_C$hetero_exp))
 mean(na.omit(hardy_DK_H$hetero_exp))
 mean(na.omit(hardy_EE_C$hetero_exp))
 mean(na.omit(hardy_TU_H$hetero_exp))
+
+mean(na.omit(hardy_all$hetero_exp))
 
 var(na.omit(hardy_GL_C$hetero_exp))
 var(na.omit(hardy_GL_H$hetero_exp))
@@ -608,3 +636,34 @@ var(na.omit(hardy_DK_H$hetero_exp))
 var(na.omit(hardy_EE_C$hetero_exp))
 var(na.omit(hardy_TU_H$hetero_exp))
 
+var(na.omit(hardy_all$hetero_exp))
+
+###ROH
+
+ROH_92_relaxed_310321<-read.table("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.indiv", header = T)
+# ROH_92_relaxed_130921_plot<-
+ggplot(data=ROH_92_relaxed_310321,
+       aes(x=KB/1000, y=NSEG, color=Pop,  size=Pop, fill=Pop, shape=Pop)) + # for shape insert shape=Pop
+  scale_shape_manual(values = c(1,2,3,4,5,6,7,8,9,10),name="Pop_Time") + # for shape uncomments 
+  geom_point() +
+  scale_size_manual(values=c(3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5), element_blank(), name="") +
+  scale_color_manual(values = c("#1F78B4", "#A6CEE3", "#6A3D9A", "#33A02C", "#B2DF8A", "#E31A1C", "#FB9A99", "#FF7F00", "#FDBF6F", "#CAB2D6" ), name="Pop_Time") +
+  scale_fill_manual(values = c("#1F78B4", "#A6CEE3", "#6A3D9A", "#33A02C", "#B2DF8A", "#E31A1C", "#FB9A99", "#FF7F00", "#FDBF6F", "#CAB2D6" ),  name="Pop_Time") +
+  guides(size = F, shape=F) + 
+  guides(color = guide_legend(override.aes = list(size = 5))) + 
+  labs(color  = "Pop_Time", shape = "Pop_Time")+
+  guides(color = guide_legend(override.aes = list(size = 5)),shape = guide_legend(override.aes = list(size = 5))) +
+  #ylim(0,500) +
+  labs(x ="Length of ROH (Mb)", y = "Number of ROH segments") +
+  #geom_hline(yintercept = 0.000147102) +
+  #geom_hline(yintercept = 0.0001613868, linetype='dashed') +
+  #geom_hline(yintercept = 7.567803e-05, linetype='dotted') +
+  theme(
+    #axis.text.x = element_blank(),
+    #axis.title.x = element_blank(),
+    #axis.ticks.x=element_blank(),
+    axis.title.x = element_text(size = 16),
+    #axis.text.x = element_text(size = 12),
+    axis.title.y = element_text(size = 16),
+    text = element_text(size = 14))+
+  theme_classic()
