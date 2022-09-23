@@ -622,6 +622,9 @@ ggplot(CEN[CEN$x>100,])+
 CEN_split<-c(max(CEN1[CEN1$label=="Norway_all",]$x),max(CEN2[CEN2$label=="Norway_all",]$x),max(CEN3[CEN3$label=="Norway_all",]$x),max(CEN4[CEN4$label=="Norway_all",]$x),max(CEN5[CEN5$label=="Norway_all",]$x),max(CEN6[CEN6$label=="Norway_all",]$x),max(CEN7[CEN7$label=="Norway_all",]$x),max(CEN8[CEN8$label=="Norway_all",]$x),max(CEN9[CEN9$label=="Norway_all",]$x),max(CEN10[CEN10$label=="Norway_all",]$x))
 summary(CEN_split)
 
+CEN_Ne<-c(last(CEN1[CEN1$label=="Norway_all",]$y),last(CEN2[CEN2$label=="Norway_all",]$y),last(CEN3[CEN3$label=="Norway_all",]$y),last(CEN4[CEN4$label=="Norway_all",]$y),last(CEN5[CEN5$label=="Norway_all",]$y),last(CEN6[CEN6$label=="Norway_all",]$y),last(CEN7[CEN7$label=="Norway_all",]$y),last(CEN8[CEN8$label=="Norway_all",]$y),last(CEN9[CEN9$label=="Norway_all",]$y),last(CEN10[CEN10$label=="Norway_all",]$y))
+summary(CEN_Ne,digits = 7)
+
 MIS1<-read.csv("Mainland_Island_split_g10_1.csv")
 MIS2<-read.csv("Mainland_Island_split_g10_2.csv")
 MIS3<-read.csv("Mainland_Island_split_g10_3.csv")
@@ -671,6 +674,10 @@ ggplot(MIS[MIS$x>100,])+
 MIS_split<-c(max(MIS1[MIS1$label=="Islands",]$x),max(MIS2[MIS2$label=="Islands",]$x),max(MIS3[MIS3$label=="Islands",]$x),max(MIS4[MIS4$label=="Islands",]$x),max(MIS5[MIS5$label=="Islands",]$x),max(MIS6[MIS6$label=="Islands",]$x),max(MIS7[MIS7$label=="Islands",]$x),max(MIS8[MIS8$label=="Islands",]$x),max(MIS9[MIS9$label=="Islands",]$x),max(MIS10[MIS10$label=="Islands",]$x))
 summary(MIS_split,digits = 7)
 
+MIS_Ne<-c(last(MIS1[MIS1$label=="Islands",]$y),last(MIS2[MIS2$label=="Islands",]$y),last(MIS3[MIS3$label=="Islands",]$y),last(MIS4[MIS4$label=="Islands",]$y),last(MIS5[MIS5$label=="Islands",]$y),last(MIS6[MIS6$label=="Islands",]$y),last(MIS7[MIS7$label=="Islands",]$y),last(MIS8[MIS8$label=="Islands",]$y),last(MIS9[MIS9$label=="Islands",]$y),last(MIS10[MIS10$label=="Islands",]$y))
+summary(MIS_Ne,digits = 7)
+
+summary((MIS1[MIS1$label=="Mainland",]$y),(MIS2[MIS2$label=="Mainland",]$y),(MIS3[MIS3$label=="Mainland",]$y),(MIS4[MIS4$label=="Mainland",]$y),(MIS5[MIS5$label=="Mainland",]$y),(MIS6[MIS6$label=="Mainland",]$y),(MIS7[MIS7$label=="Mainland",]$y),(MIS8[MIS8$label=="Mainland",]$y),(MIS9[MIS9$label=="Mainland",]$y),(MIS10[MIS10$label=="Mainland",]$y))
 
 GLIC1<-read.csv("GLIC_split_g10_1.csv")
 GLIC2<-read.csv("GLIC_split_g10_2.csv")
@@ -720,3 +727,6 @@ ggplot(GLIC[GLIC$x>100,])+
 
 GLIC_split<-c(max(GLIC1[GLIC1$label=="Iceland_all",]$x),max(GLIC2[GLIC2$label=="Iceland_all",]$x),max(GLIC3[GLIC3$label=="Iceland_all",]$x),max(GLIC4[GLIC4$label=="Iceland_all",]$x),max(GLIC5[GLIC5$label=="Iceland_all",]$x),max(GLIC6[GLIC6$label=="Iceland_all",]$x),max(GLIC7[GLIC7$label=="Iceland_all",]$x),max(GLIC8[GLIC8$label=="Iceland_all",]$x),max(GLIC9[GLIC9$label=="Iceland_all",]$x),max(GLIC10[GLIC10$label=="Iceland_all",]$x))
 summary(GLIC_split,digits = 7)
+
+GLIC_Ne<-c(last(GLIC1[GLIC1$label=="Iceland_all",]$y),last(GLIC2[GLIC2$label=="Iceland_all",]$y),last(GLIC3[GLIC3$label=="Iceland_all",]$y),last(GLIC4[GLIC4$label=="Iceland_all",]$y),last(GLIC5[GLIC5$label=="Iceland_all",]$y),last(GLIC6[GLIC6$label=="Iceland_all",]$y),last(GLIC7[GLIC7$label=="Iceland_all",]$y),last(GLIC8[GLIC8$label=="Iceland_all",]$y),last(GLIC9[GLIC9$label=="Iceland_all",]$y),last(GLIC10[GLIC10$label=="Iceland_all",]$y))
+summary(GLIC_Ne,digits = 7)

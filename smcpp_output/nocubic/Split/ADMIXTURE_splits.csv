@@ -1,4 +1,9 @@
-Split,Min,1Q,Median,Mean,3Q,Max
-Islands_mainland,4122.41,5970.41,10932.28,9799.02,12614.34,15096.73
-Norway_CE,439.5,770.9,906.2,1189.0,976.5,4492.2
-Iceland_Greenland,3354.72,3831.18,6106.11,5352.17,6516.52,6743.64
+Split,Min,1Q,Median,Mean,3Q,Max,
+Islands_mainland,4122.41,5970.41,10932.28,9799.02,12614.34,15096.73,
+Norway_CE,439.5,770.9,906.2,1189.0,976.5,4492.2,
+Iceland_Greenland,3354.72,3831.18,6106.11,5352.17,6516.52,6743.64,
+,,,,,,,
+Ne,Min,1Q,Median,Mean,3Q,Max,
+Islands_mainland,583,831,1402,1249,1472,1927,Island
+Norway_CE,783,819,867,1052,1031,2455,Norway
+Iceland_Greenland,633,679,1285,1083,1327,1593,Iceland
