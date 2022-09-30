@@ -327,7 +327,7 @@ hwe <- fread("LDfilt_hardy.hwe")
 
 het <- fread("LDfilt_HET_all.het")
 
-X<-read.vcfR("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
+X<-read.vcfR("../VCF/all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
 all_pops<-colnames(X@gt)[-1]
 
 all_pops[!all_pops%in%het$INDV]
@@ -342,7 +342,7 @@ het$E.HET<-het$N_SITES-het$`E(HOM)`
 het$hetO_frac<-het$O.HET/het$N_SITES
 het$POP<-factor(het$POP, levels = c("GL_C","GL_H","IS_C","IS_H","NO_C","NO_H","DK_C","DK_H","EE_C","TU_H"))
 het[order(het$O.HET),]
-het[order(het$het_frac),]
+het[order(het$hetO_frac),]
 
 par(mar=c(5.2,5.2,0.2,0.2))
 boxplot(het$O.HET/het$N_SITES~het$POP, ylab = "Observed heterozygosity", xlab = "", cex.lab=3, cex.axis=2)
@@ -440,7 +440,7 @@ wilcox.test(het$hetO_frac[het$POP=="NO_C" |het$POP=="NO_H" |
             ], exact = T)
 
 ## IBS
-ernir<-snpgdsOpen("ernir.gds")
+ernir<-snpgdsOpen("../VCF/ernir.gds")
 #snpgdsClose(ernir)
 ibs <- snpgdsIBS(ernir, autosome.only = F, remove.monosnp = F)
 
