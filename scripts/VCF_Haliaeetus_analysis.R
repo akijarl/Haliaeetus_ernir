@@ -29,7 +29,7 @@ require(robust)
 #install.packages("bigstatsr")
 require(bigstatsr)
 
-X<-read.vcfR("Haliaeetus_LDfilt_snpsOnly.vcf")
+X<-read.vcfR("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
 #Y<-maf(X, element=1)
 #y<-maf(X, element=2)
 
@@ -39,21 +39,25 @@ X<-read.vcfR("Haliaeetus_LDfilt_snpsOnly.vcf")
 #Y_o<-Y[order(Y[,"Frequency"],decreasing = T),]
 #barplot(Y_o[,"Frequency"], names.arg="", main="Major allele frequency")
 
+#remove indels
+X <- extract.indels(X)
+
 queryMETA(X)
 queryMETA(X, element = 'DP')
 
 dp <- extract.gt(X, element = "DP", as.numeric=TRUE)
-#barplot(dp, ylab = "Read depth (DP)")
-#abline(h=min(dp),col="red")
-#abline(h=summary(dp)[[2]],col="orange")
-#abline(h=mean(dp),col="orange")
-#abline(h=median(dp),col="cyan")
-#abline(h=summary(dp)[[5]],col="orange")
-#abline(h=max(dp),col="red")
+# barplot(dp, ylab = "Read depth (DP)")
+# abline(h=min(dp),col="red")
+# abline(h=summary(dp)[[2]],col="orange")
+# abline(h=mean(dp),col="orange")
+# abline(h=median(dp),col="cyan")
+# abline(h=summary(dp)[[5]],col="orange")
+# abline(h=max(dp),col="red")
 
+summary(dp)
 colMeans(dp)
 summary(colMeans(dp))
-
+barplot(colMeans(dp), ylab = "Mean read depth (DP)")
 #contemporary depth
 summary(colMeans(dp[,c(1:25,26:37,43:53,54:56,57:68)]))
 
@@ -77,12 +81,15 @@ chromosome <- getCHROM(X) # Chromosome information
 chromosome_n<-as.numeric(factor(chromosome))
 pos_loc<-paste(chromosome_n,position,sep="_")
 
-tab<-read.table("ernir_LD.eigenvec")
+pos_loc_all<-pos_loc
+
+tab<-read.table("../VCF/ernir_LD.eigenvec")
 pop<-tab$V12
 
 #test <- geno[!geno %in% c("0/0","0/1", "1/0","1/1", "0/2", "2/0","2/2","1/2", "2/1","2/3", "0/3", "1/3")]
 #test[!is.na(test)]
 
+#identify variants that have unusual genotypes (beyond 0/0, 0/1, 1/1)
 mult<-NULL
 for(i in 1:nrow(geno)){
   if(any(geno[i,]%in%c("0/2","2/2","1/2","0/3","1/3","2/3"))){
@@ -107,19 +114,11 @@ table(as.vector(geno[,92])) #Turkey_H
 table(as.vector(geno))
 sum(is.na(geno))/(nrow(geno)*ncol(geno))
 
+#separate out the contemporary individuals
 geno_c<-geno[,c(1:25,26:37,43:53,54:56,57:68)]
 colnames(geno_c)
 
 sum(is.na(geno_c))/(nrow(geno_c)*ncol(geno_c))
-
-nll_c<-NULL
-for(i in 1:nrow(geno_c)){
-  if(length(unique(geno_c[i,]))==1){
-    nll_c<-c(nll_c,i)
-  }
-}
-
-table(as.vector(geno_c[-nll_c,]))
 
 geno_h<-geno[,c(-1:-25,-26:-37,-43:-53,-54:-56,-57:-68)]
 colnames(geno_h)
@@ -135,9 +134,9 @@ for(i in 1:nrow(geno_h)){
 
 table(as.vector(geno_h[-nll_h,]))
 
-
 geno_sing<-geno[-mult,]
 table(as.vector(geno_sing))
+
 
 nll<-NULL
 for(i in 1:nrow(geno_sing)){
@@ -146,40 +145,92 @@ for(i in 1:nrow(geno_sing)){
   }
 }
 
-table(as.vector(geno[-nll]))
+table(as.vector(geno_sing[-nll]))
 
 geno_sing<-geno_sing[-nll,]
 
 sum(is.na(geno_sing))/(nrow(geno_sing)*ncol(geno_sing))
 
-geno_sing_c<-geno_sing[,c(1:25,26:37,43:53,54:56,57:68)]
-colnames(geno_sing_c)
-length(row.names(geno_sing_c))
-length(pos_loc)
-pos_loc<-pos_loc[-mult]
-pos_loc<-pos_loc[-nll]
+pos_loc_sing<-pos_loc[-mult]
+pos_loc_sing<-pos_loc_sing[-nll]
 
-G <- matrix(NA, nrow = nrow(geno_sing_c), ncol = ncol(geno_sing_c),dimnames = list(pos_loc,colnames(geno_sing_c)) )
+G <- matrix(NA, nrow = nrow(geno_sing), ncol = ncol(geno_sing),dimnames = list(pos_loc_sing,colnames(geno_sing)) )
 
-G[geno_sing_c %in% c("0/0")] <- 0
-G[geno_sing_c %in% c("0/1", "1/0")] <- 1
-G[geno_sing_c %in% c("1/1")] <- 2
-# G[geno %in% c("0/2", "2/0", "2|0", "0|2")] <- 3
+G[geno_sing %in% c("0/0")] <- 0
+G[geno_sing %in% c("0/1", "1/0")] <- 1
+G[geno_sing %in% c("1/1")] <- 2
+
+# G[geno %in% c("0/2", "2/0", "2|0", "0|2")] <- 1
 # G[geno %in% c("1/2", "2/1", "2|1", "1|2")] <- 4
-# G[geno %in% c("2/2", "2|2")] <- 5
+# G[geno %in% c("2/2", "2|2")] <- 2
 # G[geno %in% c("0/3", "3/0", "3|0", "0|3")] <- 6
 # G[geno %in% c("1/3", "3/1", "3|1", "1|3")] <- 7
 #G[geno %in% c("2/3", "3/2", "3|2", "2|3")] <- 8
 #G[geno %in% c("3/3", "3|3")] <- 9
 
-table(as.vector(G))
+Gall <- matrix(NA, nrow = nrow(geno), ncol = ncol(geno),dimnames = list(pos_loc,colnames(geno)) )
+
+Gall[geno %in% c("0/0")] <- 0
+Gall[geno %in% c("0/1", "1/0")] <- 1
+Gall[geno %in% c("1/1")] <- 2
+Gall[geno %in% c("0/2", "2/0")] <- 1
+Gall[geno %in% c("1/2", "2/1")] <- 1
+Gall[geno %in% c("2/2")] <- 2
+Gall[geno %in% c("0/3", "3/0")] <- 1
+Gall[geno %in% c("1/3", "3/1")] <- 1
+Gall[geno %in% c("2/3", "3/2")] <- 1
+Gall[geno %in% c("3/3")] <- 2
+
+table(as.vector(Gall))
+
+geno_sing_c<-geno_sing[,c(1:25,26:37,43:53,54:56,57:68)]
+colnames(geno_sing_c)
+row.names(geno_sing_c)
+length(row.names(geno_sing_c))
+
+#idenify sites that are invariant in the sample (i.e. all )
+nll_c<-NULL
+for(i in 1:nrow(geno_sing_c)){
+  if(length(unique(geno_sing_c[i,]))==1){
+    nll_c<-c(nll_c,i)
+  }
+}
+
+table(as.vector(geno_sing_c[-nll_c,]))
+
+geno_sing_c<-geno_sing_c[-nll_c,]
+
+pos_loc_c<-pos_loc_sing[-nll_c]
+
+Gc <- matrix(NA, nrow = nrow(geno_sing_c), ncol = ncol(geno_sing_c),dimnames = list(pos_loc_c,colnames(geno_sing_c)) )
+
+Gc[geno_sing_c %in% c("0/0")] <- 0
+Gc[geno_sing_c %in% c("0/1", "1/0")] <- 1
+Gc[geno_sing_c %in% c("1/1")] <- 2
+
+geno_sing_h<-geno_sing[,c(-1:-25,-26:-37,-43:-53,-54:-56,-57:-68)]
+
+nll_h<-NULL
+for(i in 1:nrow(geno_sing_h)){
+  if(length(unique(geno_sing_h[i,]))==1){
+    nll_h<-c(nll_h,i)
+  }
+}
+
+geno_sing_h<-geno_sing_h[-nll_h,]
+
+pos_loc_h<-pos_loc_sing[-nll_h]
+
+Gh <- matrix(NA, nrow = nrow(geno_sing_h), ncol = ncol(geno_sing_h),dimnames = list(pos_loc_h,colnames(geno_sing_h)) )
+
+Gh[geno_sing_h %in% c("0/0")] <- 0
+Gh[geno_sing_h %in% c("0/1", "1/0")] <- 1
+Gh[geno_sing_h %in% c("1/1")] <- 2
 
 #test2 <- G[!G %in% c(0:9)]
 #test2[!is.na(test2)]
 
 #(sum(G %in% c(0:9))+sum(is.na(G[!G %in% c(0:9)]))) / (nrow(G)*ncol(G))
-
-#G[is.na(G)]<-9
 
 #table(as.vector(geno[nll,]))
 
@@ -187,12 +238,76 @@ table(as.vector(G))
 
 SNPmat<-(t(G))
 
-#colnames(SNPmat)<-pos_loc
-G_nM<-SNPmat[ , apply(SNPmat, 2, function(x) !any(is.na(x)))]
-chrom_fil<-colnames(G_nM)[colnames(G_nM)%in%pos_loc]
+SNPmatC<-(t(Gc))
 
-chrom_filt<-as.numeric(sub("_.*", "", chrom_fil))
-pos_filt<-as.numeric(sub(".*_", "", chrom_fil))
+SNPmatA<-(t(Gall))
+
+#colnames(SNPmat)<-pos_loc
+# G_nM<-SNPmat[ , apply(SNPmat, 2, function(x) !any(is.na(x)))]
+# chrom_fil<-colnames(G_nM)[colnames(G_nM)%in%pos_loc]
+# 
+# chrom_filt<-as.numeric(sub("_.*", "", chrom_fil))
+# pos_filt<-as.numeric(sub(".*_", "", chrom_fil))
+
+G[is.na(G)]<-9
+
+Gc[is.na(Gc)]<-9
+
+Gh[is.na(Gh)]<-9
+
+Gall[is.na(Gall)]<-9
+
+
+summary(as.factor(Gc))/(nrow(Gc)*ncol(Gc))
+
+missGc<-NULL
+for(i in 1:nrow(Gc)){
+  if(sum(Gc[i,]==9)/sum(summary(as.factor(Gc[i,])))>0.49){
+    missGc<-c(missGc,i)
+  }
+}
+
+missGcInd<-NULL
+for(i in 1:ncol(Gc)){
+  if(sum(Gc[,i]==9)/sum(summary(as.factor(Gc[,i])))>0.49){
+    missGcInd<-c(missGcInd,i)
+  }
+}
+
+colnames(Gc)[missGcInd]
+
+#pos_loc_c<-pos_loc_c[-missGc]
+#Gc<-Gc[-missGc,]
+Gc<-Gc[,-missGcInd]
+
+
+summary(as.factor(Gh))/(nrow(Gh)*ncol(Gh))
+
+missGh<-NULL
+for(i in 1:nrow(Gh)){
+  if(sum(Gh[i,]==9)/sum(summary(as.factor(Gh[i,])))>0.49){
+    missGh<-c(missGh,i)
+  }
+}
+
+missGhInd<-NULL
+for(i in 1:ncol(Gh)){
+  if(sum(Gh[,i]==9)/sum(summary(as.factor(Gh[,i])))>0.49){
+    missGhInd<-c(missGhInd,i)
+  }
+}
+
+colnames(Gh)[missGhInd]
+
+sum(Gh[,14]==9)/sum(summary(as.factor(Gh[,14])))
+sum(Gh[,15]==9)/sum(summary(as.factor(Gh[,15])))
+sum(Gh[,29]==9)/sum(summary(as.factor(Gh[,29])))
+
+pos_loc_h<-pos_loc_h[-missGh]
+Gh<-Gh[-missGh,]
+
+#Gh<-Gh[,-c(14,15,29)]
+Gh<-Gh[,-missGhInd]
 
 #modified function MakeDiploidFSTMat
 MakeDiploidFSTMat<-function(SNPmat,locusNames,popNames){
@@ -252,15 +367,27 @@ getFSTs_diploids = function(popNameList, SNPDataColumn){
 }
 
 pop_c <- pop[c(1:25,26:37,43:53,54:56,57:68)]
-pop_h <- pop[c(38:42,69:76)]
-#my_fst <- MakeDiploidFSTMat(t(G), locusNames = position, popNames = pop)
-my_fst <- MakeDiploidFSTMat(G_nM, locusNames = pos_filt, popNames = pop_c)
+pop_c <- pop_c[-missGcInd]
+pop_h <- pop[c(-1:-25,-26:-37,-43:-53,-54:-56,-57:-68)]
+pop_h <- pop_h[-missGhInd]
+my_fst <- MakeDiploidFSTMat(SNPmat, locusNames = pos_loc, popNames = pop)
+
+my_fst_c <- MakeDiploidFSTMat(t(Gc), locusNames = pos_loc_c, popNames = pop_c)
+
+my_fst_h <- MakeDiploidFSTMat(t(Gh), locusNames = pos_loc_h, popNames = pop_h)
+
+my_fst_all <- MakeDiploidFSTMat(t(Gall), locusNames = pos_loc_all, popNames = pop)
 
 plot(my_fst$He, my_fst$FST, xlab="Heterozygosity", ylab=expression(paste("F"[ST], " across all populations", sep="")), main=expression(paste("Per locus F"[ST], " vs Heterozygosity", sep="")))
 
+plot(my_fst_c$He, my_fst_c$FST, xlab="Heterozygosity", ylab=expression(paste("F"[ST], " across all populations", sep="")), main=expression(paste("Per locus F"[ST], " vs Heterozygosity", sep="")))
+
 # If a locus has a much lower sample size compared to the rest, it could have a broader error distribution (and therefore incorrectly inferred as an outlier).
 plot(my_fst$FST, my_fst$FSTNoCorr)
-abline(0,1)
+abline(a=0,b=1,col="red")
+
+plot(my_fst_c$FST, my_fst_c$FSTNoCorr)
+abline(a=0,b=1,col="red")
 
 #### SNP trimming from OutFLANK vignette ####
 # identify a quasi-independent set of SNPs to calculate FSTbar and df. A common way of obtaining these SNPs is to thin for linkage disequilibrium (SNP thinning), which typically moves along a genome in a sliding window and thins SNPs based on linkage disequilibrium with each other. 
@@ -269,10 +396,10 @@ abline(0,1)
 #(ii) “clumping,” which may incorporate some information about the importance of SNPs based on summary statistics, and 
 #(iii) removing SNPs in long-range LD regions (Prive et al. 2017).
 
-Ga<-add_code256(big_copy(G_nM,type="raw"),code=bigsnpr:::CODE_012)
-ind.keep<-snp_clumping(G=Ga,infos.chr=chrom_filt ,infos.pos=pos_filt)
-m <- ncol(Ga)
-length(ind.keep) / m
+# Ga<-add_code256(big_copy(G_nM,type="raw"),code=bigsnpr:::CODE_012)
+# ind.keep<-snp_clumping(G=Ga,infos.chr=chrom_filt ,infos.pos=pos_filt)
+# m <- ncol(Ga)
+# length(ind.keep) / m
 
 out_trim <- OutFLANK(my_fst[ind.keep,], NumberOfSamples=length(unique(pop)), qthreshold = 0.001, Hmin = 0.1)
 str(out_trim)
@@ -293,13 +420,92 @@ hist(out_trim$results$pvaluesRightTail)
 P1 <- pOutlierFinderChiSqNoCorr(my_fst, Fstbar = out_trim$FSTNoCorrbar, dfInferred = out_trim$dfInferred, qthreshold = 0.05, Hmin=0.1)
 
 (my_out <- P1$OutlierFlag==TRUE)
+sum(my_out,na.rm = T)
 plot(P1$He, P1$FST, pch=19, col=rgb(0,0,0,0.1),xlab="Heterozygosity", ylab=expression(paste("F"[ST], " across all populations", sep="")), main=expression(paste("Per locus F"[ST], " vs Heterozygosity", sep="")))
 points(P1$He[my_out], P1$FST[my_out], col="blue")
 
 hist(P1$pvaluesRightTail)
 
+plot(as.factor(P1[!is.na(P1$He),]$LocusName[P1[!is.na(P1$He),]$He>0.1]), P1[!is.na(P1$He),]$FST[P1[!is.na(P1$He),]$He>0.1],
+     xlab="Position", ylab="FST", col=rgb(0,0,0,0.2))
+points(P1$LocusName[my_out], P1$FST[my_out], col="magenta", pch=20)  
+
 OutLoc<-P1[P1$OutlierFlag==TRUE,]
 OutLoc<-OutLoc[!is.na(OutLoc$OutlierFlag),]
+
+#contemporary
+ind.keep_c = 1:nrow(Gc)
+out_trim_c <- OutFLANK(my_fst_c[ind.keep_c,], NumberOfSamples=length(unique(pop_c)), qthreshold = 0.001, Hmin = 0.1)
+str(out_trim_c)
+head(out_trim_c$results)
+summary(out_trim_c$results$OutlierFlag)
+summary(out_trim_c$results$pvaluesRightTail)
+
+OutFLANKResultsPlotter(out_trim_c, withOutliers = TRUE,
+                       NoCorr = TRUE, Hmin = 0.01, binwidth = 0.01, Zoom =
+                         FALSE, RightZoomFraction = 0.05, titletext = NULL)
+## Zoom in on right tail
+OutFLANKResultsPlotter(out_trim_c , withOutliers = TRUE,
+                       NoCorr = TRUE, Hmin = 0.01, binwidth = 0.01, Zoom =
+                         TRUE, RightZoomFraction = 0.15, titletext = NULL)
+
+hist(out_trim_c$results$pvaluesRightTail)
+
+P1_c <- pOutlierFinderChiSqNoCorr(my_fst_c, Fstbar = out_trim_c$FSTNoCorrbar, dfInferred = out_trim_c$dfInferred, qthreshold = 0.05, Hmin=0.1)
+
+(my_out_c <- P1_c$OutlierFlag==TRUE)
+sum(my_out_c,na.rm = T)
+plot(P1_c$He, P1_c$FST, pch=19, col=rgb(0,0,0,0.1),xlab="Heterozygosity", ylab=expression(paste("F"[ST], " across all populations", sep="")), main=expression(paste("Per locus F"[ST], " vs Heterozygosity", sep="")))
+points(P1_c$He[my_out], P1_c$FST[my_out], col="blue")
+
+hist(P1_c$pvaluesRightTail)
+
+plot(as.factor(P1_c[!is.na(P1_c$He),]$LocusName[P1_c[!is.na(P1_c$He),]$He>0.1]), P1_c[!is.na(P1_c$He),]$FST[P1_c[!is.na(P1_c$He),]$He>0.1],
+     xlab="Position", ylab="FST", col=rgb(0,0,0,0.2))
+points(P1_c$LocusName[my_out_c], P1_c$FST[my_out_c], col="magenta", pch=20)  
+
+OutLoc_c<-P1_c[P1_c$OutlierFlag==TRUE,]
+OutLoc_c<-OutLoc_c[!is.na(OutLoc_c$OutlierFlag),]
+
+#historic
+ind.keep_h<-1:nrow(Gh)
+
+out_trim_h <- OutFLANK(my_fst_h[ind.keep_h,], NumberOfSamples=length(unique(pop_h)), qthreshold = 0.001, Hmin = 0.1)
+str(out_trim_h)
+head(out_trim_h$results)
+summary(out_trim_h$results$OutlierFlag)
+summary(out_trim_h$results$pvaluesRightTail)
+
+OutFLANKResultsPlotter(out_trim_h, withOutliers = TRUE,
+                       NoCorr = TRUE, Hmin = 0.01, binwidth = 0.01, Zoom =
+                         FALSE, RightZoomFraction = 0.05, titletext = NULL)
+## Zoom in on right tail
+OutFLANKResultsPlotter(out_trim_h , withOutliers = TRUE,
+                       NoCorr = TRUE, Hmin = 0.01, binwidth = 0.01, Zoom =
+                         TRUE, RightZoomFraction = 0.15, titletext = NULL)
+
+hist(out_trim_h$results$pvaluesRightTail)
+
+P1_h <- pOutlierFinderChiSqNoCorr(my_fst_h, Fstbar = out_trim_h$FSTNoCorrbar, dfInferred = out_trim_h$dfInferred, qthreshold = 0.05, Hmin=0.1)
+
+P1_h_FST1<-P1_h[P1_h$FST==1,]
+P1_h_FST1<-P1_h_FST1[!is.na(P1_h_FST1$FST),]
+
+
+(my_out_h <- P1_h$OutlierFlag==TRUE)
+sum(my_out_h,na.rm = T)
+plot(P1_h$He, P1_h$FST, pch=19, col=rgb(0,0,0,0.1),xlab="Heterozygosity", ylab=expression(paste("F"[ST], " across all populations", sep="")), main=expression(paste("Per locus F"[ST], " vs Heterozygosity", sep="")))
+points(P1_h$He[my_out], P1_h$FST[my_out], col="blue")
+
+hist(P1_h$pvaluesRightTail)
+
+plot(as.factor(P1_h[!is.na(P1_h$He),]$LocusName[P1_h[!is.na(P1_h$He),]$He>0.1]), P1_h[!is.na(P1_h$He),]$FST[P1_h[!is.na(P1_h$He),]$He>0.1],
+     xlab="Position", ylab="FST", col=rgb(0,0,0,0.2))
+points(P1_h$LocusName[my_out_h], P1_h$FST[my_out_h], col="magenta", pch=20)  
+
+OutLoc_h<-P1_h[P1_h$OutlierFlag==TRUE,]
+OutLoc_h<-OutLoc_h[!is.na(OutLoc_h$OutlierFlag),]
+
 
 chrom_out<-as.numeric(sub("_.*", "", OutLoc$LocusName))
 pos_out<-as.numeric(sub(".*_", "", OutLoc$LocusName))
@@ -327,7 +533,7 @@ hwe <- fread("LDfilt_hardy.hwe")
 
 het <- fread("LDfilt_HET_all.het")
 
-X<-read.vcfR("../VCF/all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
+#X<-read.vcfR("../VCF/all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
 all_pops<-colnames(X@gt)[-1]
 
 all_pops[!all_pops%in%het$INDV]
@@ -340,6 +546,7 @@ head(het)
 het$O.HET<-het$N_SITES-het$`O(HOM)`
 het$E.HET<-het$N_SITES-het$`E(HOM)`
 het$hetO_frac<-het$O.HET/het$N_SITES
+het$hetE_frac<-het$E.HET/het$N_SITES
 het$POP<-factor(het$POP, levels = c("GL_C","GL_H","IS_C","IS_H","NO_C","NO_H","DK_C","DK_H","EE_C","TU_H"))
 het[order(het$O.HET),]
 het[order(het$hetO_frac),]
@@ -414,15 +621,22 @@ het_gg_2figures_090421<-
             ncol = 2, nrow = 1, common.legend = TRUE)
 
 het[, .(meanFIS=mean(F)), by=POP]
-het[, .(meanFIS=var(F)), by=POP]
+het[, .(meanFIS=sd(F)), by=POP]
+
+het[, .(meanFIS=mean(F))]
+het[, .(meanFIS=sd(F))]
 
 het[, .(meanE.HET=mean(E.HET)), by=POP]
-het[, .(meanE.HET=var(E.HET)), by=POP]
+het[, .(meanE.HET=sd(E.HET)), by=POP]
 
 het[, .(meanO.HET=mean(O.HET)), by=POP]
-het[, .(meanO.HET=var(O.HET)), by=POP]
+het[, .(meanO.HET=sd(O.HET)), by=POP]
 
-het[, .(meanHETfrac=mean(het_frac)), by=POP]
+het[, .(meanHETefrac=mean(hetE_frac)), by=POP]
+het[, .(meanHETefrac=sd(hetE_frac)), by=POP]
+
+het[, .(meanHETofrac=mean(hetO_frac)), by=POP]
+het[, .(meanHETofrac=sd(hetO_frac)), by=POP]
 
 het_data_obs_exp_for_ggplot_true
 het[, .(meanE.HET=mean(E.HET)), by=POP]
@@ -451,6 +665,8 @@ rownames(IBS)<-all_pops
 for(i in 1:ncol(IBS)){
     IBS[which(IBS[,i]==1.0000000),i]<-NA
 }
+#mean(as.numeric(as.dist(1-IBS[Pop=="GL_C",Pop=="GL_C"])))
+IBS_dist<-1-IBS
 
 summary(as.factor(Pop))
 mean(colMeans(IBS[Pop=="GL_C",Pop=="GL_C"],na.rm = T))
@@ -464,6 +680,39 @@ mean(colMeans(IBS[Pop=="DK_H",Pop=="DK_H"],na.rm = T))
 mean(colMeans(IBS[Pop=="EE_C",Pop=="EE_C"],na.rm = T))
 mean(colMeans(IBS[Pop=="TU_H",Pop=="TU_H"],na.rm = T))
 
+mean(colMeans(IBS_dist[Pop=="GL_C",Pop=="GL_C"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="GL_H",Pop=="GL_H"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="IS_C",Pop=="IS_C"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="IS_H",Pop=="IS_H"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="NO_C",Pop=="NO_C"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="NO_H",Pop=="NO_H"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="DK_C",Pop=="DK_C"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="DK_H",Pop=="DK_H"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="EE_C",Pop=="EE_C"],na.rm = T))
+mean(colMeans(IBS_dist[Pop=="TU_H",Pop=="TU_H"],na.rm = T))
+
+mean(as.numeric(as.dist(IBS_dist)))
+sd(as.numeric(as.dist(IBS_dist)))
+
+sd(as.numeric(as.dist(IBS_dist[Pop=="GL_C",Pop=="GL_C"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="GL_H",Pop=="GL_H"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="IS_C",Pop=="IS_C"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="IS_H",Pop=="IS_H"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="NO_C",Pop=="NO_C"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="NO_H",Pop=="NO_H"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="DK_C",Pop=="DK_C"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="DK_H",Pop=="DK_H"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="EE_C",Pop=="EE_C"])))
+sd(as.numeric(as.dist(IBS_dist[Pop=="TU_H",Pop=="TU_H"])))
+
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="GL_C",Pop=="GL_C"])),as.numeric(as.dist(IBS_dist[Pop=="GL_H",Pop=="GL_H"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="GL_H",Pop=="GL_H"])),as.numeric(as.dist(IBS_dist[Pop=="GL_C",Pop=="GL_C"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="IS_C",Pop=="IS_C"])),as.numeric(as.dist(IBS_dist[Pop=="IS_H",Pop=="IS_H"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="IS_H",Pop=="IS_H"])),as.numeric(as.dist(IBS_dist[Pop=="IS_C",Pop=="IS_C"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="NO_C",Pop=="NO_C"])),as.numeric(as.dist(IBS_dist[Pop=="NO_H",Pop=="NO_H"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="NO_H",Pop=="NO_H"])),as.numeric(as.dist(IBS_dist[Pop=="NO_C",Pop=="NO_C"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="DK_C",Pop=="DK_C"])),as.numeric(as.dist(IBS_dist[Pop=="DK_H",Pop=="DK_H"])),alternative = "greater")
+wilcox.test(as.numeric(as.dist(IBS_dist[Pop=="DK_H",Pop=="DK_H"])),as.numeric(as.dist(IBS_dist[Pop=="DK_C",Pop=="DK_C"])),alternative = "greater")
 
 require(plyr)
 require(qqman)
@@ -599,18 +848,18 @@ mean(na.omit(hardy_TU_H$hetero))
 
 mean(na.omit(hardy_all$hetero))
 
-var(na.omit(hardy_GL_C$hetero))
-var(na.omit(hardy_GL_H$hetero))
-var(na.omit(hardy_IS_C$hetero))
-var(na.omit(hardy_IS_H$hetero))
-var(na.omit(hardy_NO_C$hetero))
-var(na.omit(hardy_NO_H$hetero))
-var(na.omit(hardy_DK_C$hetero))
-var(na.omit(hardy_DK_H$hetero))
-var(na.omit(hardy_EE_C$hetero))
-var(na.omit(hardy_TU_H$hetero))
+sd(na.omit(hardy_GL_C$hetero))
+sd(na.omit(hardy_GL_H$hetero))
+sd(na.omit(hardy_IS_C$hetero))
+sd(na.omit(hardy_IS_H$hetero))
+sd(na.omit(hardy_NO_C$hetero))
+sd(na.omit(hardy_NO_H$hetero))
+sd(na.omit(hardy_DK_C$hetero))
+sd(na.omit(hardy_DK_H$hetero))
+sd(na.omit(hardy_EE_C$hetero))
+sd(na.omit(hardy_TU_H$hetero))
 
-var(na.omit(hardy_all$hetero))
+sd(na.omit(hardy_all$hetero))
 
 mean(na.omit(hardy_GL_C$hetero_exp))
 mean(na.omit(hardy_GL_H$hetero_exp))
@@ -625,18 +874,18 @@ mean(na.omit(hardy_TU_H$hetero_exp))
 
 mean(na.omit(hardy_all$hetero_exp))
 
-var(na.omit(hardy_GL_C$hetero_exp))
-var(na.omit(hardy_GL_H$hetero_exp))
-var(na.omit(hardy_IS_C$hetero_exp))
-var(na.omit(hardy_IS_H$hetero_exp))
-var(na.omit(hardy_NO_C$hetero_exp))
-var(na.omit(hardy_NO_H$hetero_exp))
-var(na.omit(hardy_DK_C$hetero_exp))
-var(na.omit(hardy_DK_H$hetero_exp))
-var(na.omit(hardy_EE_C$hetero_exp))
-var(na.omit(hardy_TU_H$hetero_exp))
+sd(na.omit(hardy_GL_C$hetero_exp))
+sd(na.omit(hardy_GL_H$hetero_exp))
+sd(na.omit(hardy_IS_C$hetero_exp))
+sd(na.omit(hardy_IS_H$hetero_exp))
+sd(na.omit(hardy_NO_C$hetero_exp))
+sd(na.omit(hardy_NO_H$hetero_exp))
+sd(na.omit(hardy_DK_C$hetero_exp))
+sd(na.omit(hardy_DK_H$hetero_exp))
+sd(na.omit(hardy_EE_C$hetero_exp))
+sd(na.omit(hardy_TU_H$hetero_exp))
 
-var(na.omit(hardy_all$hetero_exp))
+sd(na.omit(hardy_all$hetero_exp))
 
 ###ROH
 
@@ -691,6 +940,11 @@ NOh_DKh <- read.table("Norway_Denmark_h_h_comp.weir.fst",header = T)
 NOh_TUh <- read.table("Norway_Turkey_h_h_comp.weir.fst",header = T)
 DKh_TUh <- read.table("Denmark_Turkey_h_h_comp.weir.fst",header = T)
 
+IS_ch <- read.table("Iceland_c_h_comp.weir.fst",header = T)
+GL_ch <- read.table("Greenland_c_h_comp.weir.fst",header = T)
+NO_ch <- read.table("Norway_c_h_comp.weir.fst",header = T)
+DK_ch <- read.table("Denmark_c_h_comp.weir.fst",header = T)
+
 mean(IS_GL$WEIR_AND_COCKERHAM_FST,na.rm = T)
 mean(IS_NO$WEIR_AND_COCKERHAM_FST,na.rm = T)
 mean(IS_DK$WEIR_AND_COCKERHAM_FST,na.rm = T)
@@ -712,3 +966,75 @@ mean(GLh_TUh$WEIR_AND_COCKERHAM_FST,na.rm = T)
 mean(NOh_DKh$WEIR_AND_COCKERHAM_FST,na.rm = T)
 mean(NOh_TUh$WEIR_AND_COCKERHAM_FST,na.rm = T)
 mean(DKh_TUh$WEIR_AND_COCKERHAM_FST,na.rm = T)
+
+mean(IS_ch$WEIR_AND_COCKERHAM_FST,na.rm = T)
+mean(GL_ch$WEIR_AND_COCKERHAM_FST,na.rm = T)
+mean(NO_ch$WEIR_AND_COCKERHAM_FST,na.rm = T)
+mean(DK_ch$WEIR_AND_COCKERHAM_FST,na.rm = T)
+
+IS_ch$CHROM <- revalue(IS_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+GL_ch$CHROM <- revalue(GL_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+NO_ch$CHROM <- revalue(NO_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+DK_ch$CHROM <- revalue(DK_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+
+IS_GL$CHROM <- revalue(IS_GL$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+
+IS_ch$CHROM <- as.numeric(IS_ch$CHROM)
+GL_ch$CHROM <- as.numeric(GL_ch$CHROM)
+NO_ch$CHROM <- as.numeric(NO_ch$CHROM)
+DK_ch$CHROM <- as.numeric(DK_ch$CHROM)
+
+IS_GL$CHROM <- as.numeric(IS_GL$CHROM)
+
+IS_ch$SNP<-seq.int(nrow(IS_ch))
+GL_ch$SNP<-seq.int(nrow(GL_ch))
+NO_ch$SNP<-seq.int(nrow(NO_ch))
+DK_ch$SNP<-seq.int(nrow(DK_ch))
+
+IS_GL$SNP<-seq.int(nrow(IS_GL))
+
+IS_ch<-IS_ch[!is.na(IS_ch$WEIR_AND_COCKERHAM_FST),]
+GL_ch<-GL_ch[!is.na(GL_ch$WEIR_AND_COCKERHAM_FST),]
+NO_ch<-NO_ch[!is.na(NO_ch$WEIR_AND_COCKERHAM_FST),]
+DK_ch<-DK_ch[!is.na(DK_ch$WEIR_AND_COCKERHAM_FST),]
+
+IS_GL<-IS_GL[!is.na(IS_GL$WEIR_AND_COCKERHAM_FST),]
+
+manhattan(IS_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(GL_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(NO_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(DK_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(IS_GL, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+
+
+
+
+setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/FST_full/")
+
+IS_ch <- read.table("fst_weir_ISM_ISH_110321.weir.fst",header = T)
+IS_ch$CHROM <- revalue(IS_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+IS_ch$CHROM <- as.numeric(IS_ch$CHROM)
+IS_ch$SNP<-seq.int(nrow(IS_ch))
+IS_ch<-IS_ch[!is.na(IS_ch$WEIR_AND_COCKERHAM_FST),]
+manhattan(IS_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+
+GL_ch <- read.table("fst_weir_GLH_GLM_110321.weir.fst",header = T)
+GL_ch$CHROM <- revalue(GL_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+GL_ch$CHROM <- as.numeric(GL_ch$CHROM)
+GL_ch$SNP<-seq.int(nrow(GL_ch))
+GL_ch<-GL_ch[!is.na(GL_ch$WEIR_AND_COCKERHAM_FST),]
+manhattan(GL_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+
+NO_ch <- read.table("fst_weir_NOM_NOH_110321.weir.fst",header = T)
+NO_ch$CHROM <- revalue(NO_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+NO_ch$CHROM <- as.numeric(NO_ch$CHROM)
+NO_ch$SNP<-seq.int(nrow(NO_ch))
+NO_ch<-NO_ch[!is.na(NO_ch$WEIR_AND_COCKERHAM_FST),]
+manhattan(NO_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+
+DK_ch <- read.table("fst_weir_DKM_DKH_110321.weir.fst",header = T)
+DK_ch$CHROM <- revalue(DK_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+DK_ch$CHROM <- as.numeric(DK_ch$CHROM)
+DK_ch$SNP<-seq.int(nrow(DK_ch))
+DK_ch<-DK_ch[!is.na(DK_ch$WEIR_AND_COCKERHAM_FST),]
+manhattan(DK_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
