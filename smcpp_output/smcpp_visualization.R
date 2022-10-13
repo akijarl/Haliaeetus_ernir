@@ -245,20 +245,21 @@ ggplot(Con[Con$x>100,])+
   geom_line(aes(x*0.7,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
   xlab("Years ago")+
   ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,160000))+#,ylim=c(0,23))+
+  coord_cartesian(xlim=c(0,160000),ylim=c(0,30))+
   scale_linetype_manual(values = rep("solid",10),guide="none")+
   scale_color_manual(name="Sample",values = c("blue","black","green","red","orange"), labels=c("Denmark","Estonia","Greenland","Iceland","Norway"))+
   guides(colour = guide_legend(override.aes = list(alpha = 1)))+
   scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
   geom_vline(xintercept=10000,lty=2)+
-  #geom_vline(xintercept=25000,lty=2)+
-  geom_vline(xintercept=110000,lty=3)+
-  geom_vline(xintercept=150000,lty=3)+
+  geom_vline(xintercept=20000,lty=3)+
+  geom_vline(xintercept=110000,lty=4)+
+  geom_vline(xintercept=150000,lty=4)+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
 
 #Historic
-setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/His/")
+#setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/His/")
+setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/His/")
 
 GH1<-read.csv("Greenland_his1.csv")
 GH2<-read.csv("Greenland_his2.csv")
@@ -408,20 +409,20 @@ His <- rbind(IH,GH,NH,DH,TH)
 #   theme_classic()+
 #   theme(axis.text.x = element_text(angle = 45,hjust=1))
 His <- rbind(GH,NH,DH)
+
 ggplot(His[His$x>100,])+
-  geom_line(aes(x,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  geom_line(aes(x*0.5,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
   xlab("Years ago")+
   ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,300000),ylim=c(0,20))+
+  coord_cartesian(xlim=c(0,160000),ylim=c(0,30))+
   scale_linetype_manual(values = rep("solid",10),guide="none")+
   scale_color_manual(name="Sample",values = c("blue","green","orange"), labels=c("Denmark","Greenland","Norway"))+
   guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  scale_x_continuous(breaks = c(seq(0,300000,25000)))+
-  geom_vline(xintercept=1000,lty=3)+
-  geom_vline(xintercept=10000,lty=1)+
-  geom_vline(xintercept=25000,lty=2)+
-  # geom_vline(xintercept=110000,lty=3)+
-  # geom_vline(xintercept=150000,lty=3)+
+  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
+  geom_vline(xintercept=10000,lty=2)+
+  geom_vline(xintercept=20000,lty=3)+
+  geom_vline(xintercept=110000,lty=4)+
+  geom_vline(xintercept=150000,lty=4)+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
 
