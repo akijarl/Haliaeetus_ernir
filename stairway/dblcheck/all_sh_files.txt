@@ -1,0 +1,4 @@
+DK_C_angsd_090721_10boot_100miosites_T15.6_mut3.29_10-9.blueprint.sh
+GL_C_angsd_090721_10boot_100miosites_T15.6_mut3.29_10-9.blueprint.sh
+IS_C_angsd_090721_10boot_100miosites_T15.6_mut3.29_10-9.blueprint.sh
+NO_11_C_angsd_090721_10boot_100miosites_T15.6_mut3.29_10-9.blueprint.sh

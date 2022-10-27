@@ -1060,3 +1060,121 @@ DK_ch$CHROM <- as.numeric(DK_ch$CHROM)
 DK_ch$SNP<-seq.int(nrow(DK_ch))
 DK_ch<-DK_ch[!is.na(DK_ch$WEIR_AND_COCKERHAM_FST),]
 manhattan(DK_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+
+
+### All in one 3.2*10-9 - 100K years
+setwd("E:/Research_AJL/Haliaeetus/Haliaeetus_ernir/stairway/dblcheck")
+
+GL_C_2.3_109_ang_auto <- read.table("GL_C_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9.final.summary", head=T)
+IS_C_2.3_109_ang_auto <- read.table("IS_C_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9.final.summary", head=T)
+NO_C_2.3_109_ang_auto <- read.table("NO_C_11_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9.final.summary", head=T)
+DK_C_2.3_109_ang_auto <- read.table("DK_C_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9.final.summary", head=T)
+
+GL_C_2.3_109_ang_auto$label <- "Greenland"
+IS_C_2.3_109_ang_auto$label <- "Iceland"
+NO_C_2.3_109_ang_auto$label <- "Norway"
+DK_C_2.3_109_ang_auto$label <- "Denmark"
+
+Con <- rbind(GL_C_2.3_109_ang_auto,IS_C_2.3_109_ang_auto,NO_C_2.3_109_ang_auto,DK_C_2.3_109_ang_auto)
+
+options(scipen=5)
+
+#pdf("plot_stairway_4pops_raw_95_150721_T15.6_mut2.3_10-9_100Kyears_angsd_auto.pdf", height = 8, width = 12)
+par(mar=c(6,4.5,0.5,0.5))
+plot(GL_C_2.3_109_ang_auto$year, GL_C_2.3_109_ang_auto$Ne_median/1000, col="green", type="l", xlim=c(0,1600000), ylim=c(0,1000), cex.axis=1.5, cex.lab=1.5, ylab="Ne/1000", xlab = "Years ago")
+lines(GL_C_2.3_109_ang_auto$year, GL_C_2.3_109_ang_auto$Ne_2.5./1000, col="green", lty=2, lwd=1)
+lines(GL_C_2.3_109_ang_auto$year, GL_C_2.3_109_ang_auto$Ne_97.5./1000, col="green", lty=2, lwd=1)
+
+lines(IS_C_2.3_109_ang_auto$year, IS_C_2.3_109_ang_auto$Ne_median/1000, col="red", lwd=1)
+lines(IS_C_2.3_109_ang_auto$year, IS_C_2.3_109_ang_auto$Ne_2.5./1000, col="red", lty=2, lwd=1)
+lines(IS_C_2.3_109_ang_auto$year, IS_C_2.3_109_ang_auto$Ne_97.5./1000, col="red", lty=2, lwd=1)
+
+lines(NO_C_2.3_109_ang_auto$year, NO_C_2.3_109_ang_auto$Ne_median/1000, col="orange", lwd=1)
+lines(NO_C_2.3_109_ang_auto$year, NO_C_2.3_109_ang_auto$Ne_2.5./1000, col="orange", lty=2, lwd=1)
+lines(NO_C_2.3_109_ang_auto$year, NO_C_2.3_109_ang_auto$Ne_97.5./1000, col="orange", lty=2, lwd=1)
+
+lines(DK_C_2.3_109_ang_auto$year, DK_C_2.3_109_ang_auto$Ne_median/1000, col="blue", lwd=1)
+lines(DK_C_2.3_109_ang_auto$year, DK_C_2.3_109_ang_auto$Ne_2.5./1000, col="blue", lty=2, lwd=1)
+lines(DK_C_2.3_109_ang_auto$year, DK_C_2.3_109_ang_auto$Ne_97.5./1000, col="blue", lty=2, lwd=1)
+# legend("topleft",        # Add legend to plot
+#        legend = c("GL_C", "IS_C", "NO_C", "DK_C"),
+#        col = c("green", "red", "orange", "blue"),
+#        pch = 16,
+#        cex = 1.5)
+#dev.off()
+
+require(ggplot2)
+
+ggplot(Con)+
+  geom_line(aes(year/3.12,(Ne_median/1000),colour=label),lwd=1.5)+
+  geom_line(aes(year/3.12,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  geom_line(aes(year/3.12,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,160000),ylim=c(0,600))+
+  #scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
+  #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
+  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
+  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
+  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
+  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+ggplot(Con)+
+  geom_line(aes(year/2.229,(Ne_median/1000),colour=label),lwd=1.5)+
+  geom_line(aes(year/2.229,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  geom_line(aes(year/2.229,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,160000),ylim=c(0,600))+
+  #scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
+  #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
+  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
+  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
+  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
+  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+ggplot(Con)+
+  geom_line(aes(year/1.56,(Ne_median/1000),colour=label),lwd=1.5)+
+  geom_line(aes(year/1.56,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  geom_line(aes(year/1.56,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  xlab("Years ago")+
+  ylab("Ne/1000")+
+  coord_cartesian(xlim=c(0,160000),ylim=c(0,600))+
+  #scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
+  #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
+  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
+  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
+  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
+  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+
+ggplot(Con)+
+  geom_line(aes(year/2.229,(Ne_median),colour=label),lwd=1.5)+
+  geom_line(aes(year/2.229,(Ne_2.5.),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  geom_line(aes(year/2.229,(Ne_97.5.),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  xlab("Years ago")+
+  ylab("Ne")+
+  coord_cartesian(xlim=c(0,200),ylim=c(0,1000))+
+  #scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
+  #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(seq(10,200,10)))+
+  #scale_y_continuous(breaks = c(seq(0.5,30,1)))+
+  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
+  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
+  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
+  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))

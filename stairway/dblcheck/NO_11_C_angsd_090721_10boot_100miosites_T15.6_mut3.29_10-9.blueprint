@@ -1,0 +1,25 @@
+#example blueprint file
+#input setting
+popid: NO_C_11_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9 # id of the population (no white space)
+nseq: 22 # number of sequences
+L: 1044147099 # total number of observed nucleic sites, including polymorphic and monomorphic
+whether_folded: false # whethr the SFS is folded (true or false)
+SFS: 690796.4972	645695.2252	614446.0733	517120.7224	405337.1338	335245.3236	272056.4971	228767.6063	194996.2344	173372.9418	177733.5026	130336.9474	122574.9608	116408.82	110515.2176	106297.6621	103889.1945	106888.2466	113359.6458	120505.4892	136580.8917 # snp frequency spectrum: number of singleton, number of doubleton, etc. (separated by white space)
+#smallest_size_of_SFS_bin_used_for_estimation: 1 # default is 1; to ignore singletons, change this number to 2
+#largest_size_of_SFS_bin_used_for_estimation: 21 # default is n-1; to ignore singletons, change this number to nseq-2
+pct_training: 0.67 # percentage of sites for training
+nrand: 3 8 12 17 # number of random break points for each try (separated by white space)
+project_dir: NO_C_11_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9 # project directory
+stairway_plot_dir: stairway_plot_es # directory to the stairway plot files
+ninput: 200 # number of input files to be created for each estimation
+#output setting
+mu: 3.29e-9 # assumed mutation rate per site per generation
+year_per_generation: 15.6 # assumed generation time (in years)
+#plot setting
+plot_title: NO_C_11_angsd_120721_10boot_100miosites_T15.6_mut3.29_10-9 # title of the plot
+xrange: 0,0 # Time (1k year) range; format: xmin,xmax; "0,0" for default
+yrange: 0,0 # Ne (1k individual) range; format: xmin,xmax; "0,0" for default
+xspacing: 2 # X axis spacing
+yspacing: 2 # Y axis spacing
+fontsize: 12 # Font size
+
