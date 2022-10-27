@@ -2,8 +2,8 @@
 #Code for Haliaeetus LD fitlered data
 #####################################################
 
-#setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF")
-setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/")
+setwd("/home/aki/Documents/Rannsóknir/Haliaeetus/VCF")
+#setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/")
 
 require(cowplot)
 require(vcfR)
@@ -531,7 +531,7 @@ require(vcfR)
 
 hwe <- fread("LDfilt_hardy.hwe")
 
-het <- fread("LDfilt_HET_all.het")
+het <- fread("../Haliaeetus_ernir/LDfilt_HET_all.het")
 
 #X<-read.vcfR("../VCF/all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.vcf")
 all_pops<-colnames(X@gt)[-1]
@@ -888,8 +888,7 @@ sd(na.omit(hardy_TU_H$hetero_exp))
 sd(na.omit(hardy_all$hetero_exp))
 
 ###ROH
-
-ROH_92_relaxed_310321<-read.table("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.indiv", header = T)
+ROH_92_relaxed_310321<-read.table("../Haliaeetus_ernir/all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.indiv", header = T)
 # ROH_92_relaxed_130921_plot<-
 ggplot(data=ROH_92_relaxed_310321,
        aes(x=KB/1000, y=NSEG, color=Pop,  size=Pop, fill=Pop, shape=Pop)) + # for shape insert shape=Pop
@@ -915,6 +914,29 @@ ggplot(data=ROH_92_relaxed_310321,
     #axis.text.x = element_text(size = 12),
     axis.title.y = element_text(size = 16),
     text = element_text(size = 14))+
+  theme_classic()
+
+autSize <- 1103368343 #length of the autosome
+
+ROH_92_relaxed_310321$FROH<-(1000*ROH_92_relaxed_310321$KB)/autSize
+ROH_92_relaxed_310321$POP<-Pop
+
+ROH<-aggregate(ROH_92_relaxed_310321$FROH, list(ROH_92_relaxed_310321$POP), FUN=mean)
+miss <- c("BB38","DKH2","DKH14","GLH1","GLH15","ISH4","ISH6","K9","K8","K6","K2","K4","NOH6","NOH7")
+ROH_78<-ROH_92_relaxed_310321[!ROH_92_relaxed_310321$FID%in%miss,]
+ROH_78<-aggregate(ROH_78$FROH, list(ROH_78$POP), FUN=mean)
+
+colnames(ROH)<-c("Group","F_ROH")
+colnames(ROH_78)<-c("Group","F_ROH")
+
+FH <- data.frame(Group=c("GL_C","GL_H","IS_C","IS_H","NO_C","NO_H","DK_C","DK_H","EE_C","TU_H"),F_H=c(0.362,0.386,0.456,0.4096,-0.2204,-0.206,-0.0889,-0.227,-0.186,-0.139))
+F_comp<-merge(ROH,FH,by = "Group")
+
+plot(F_comp$F_ROH,F_comp$F_H)
+
+F_comp_filt<-merge(ROH_78,FH[!FH$Group=="IS_H",],by = "Group")
+ggplot(data=F_comp_filt)+
+  geom_point(aes(F_ROH,F_H,colour=Group),size=2)+
   theme_classic()
 
 setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/")
