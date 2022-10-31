@@ -116,7 +116,7 @@ ggplot(Con[Con$x>100,])+
   theme_classic()
 
 setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
-setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
+setwd("/home/aki/Documents/Rannsóknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
 setwd("E:/Research_AJL/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
 
 GC1<-read.csv("Greenland_con1.csv")
@@ -252,9 +252,26 @@ ggplot(Con[Con$x>100,])+
   guides(colour = guide_legend(override.aes = list(alpha = 1)))+
   scale_x_continuous(breaks = c(1000,seq(10000,200000,10000)))+
   geom_vline(xintercept=10000,lty=2,lwd=0.75)+
-  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
+  geom_vline(xintercept=25000,lty=3,lwd=0.75)+
   geom_vline(xintercept=110000,lty=4,lwd=0.75)+
   geom_vline(xintercept=150000,lty=4,lwd=0.75)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+ggplot(Con)+
+  geom_line(aes(x*0.8,(y),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  xlab("Years ago")+
+  ylab("Ne")+
+  coord_cartesian(xlim=c(0,2500),ylim=c(0,23000))+
+  scale_linetype_manual(values = rep("solid",10),guide="none")+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+  scale_x_continuous(breaks = c(seq(0,2500,100)))+
+  scale_y_continuous(breaks = c(seq(0,23000,1000)))+
+  #geom_vline(xintercept=10000,lty=2,lwd=0.75)+
+  #geom_vline(xintercept=25000,lty=3,lwd=0.75)+
+  #geom_vline(xintercept=110000,lty=4,lwd=0.75)+
+  #geom_vline(xintercept=150000,lty=4,lwd=0.75)+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
 # ggplot(Con[Con$x>100,])+
