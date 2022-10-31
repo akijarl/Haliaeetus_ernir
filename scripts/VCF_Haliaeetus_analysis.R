@@ -58,7 +58,7 @@ summary(dp)
 colMeans(dp)
 summary(colMeans(dp))
 barplot(colMeans(dp), ylab = "Mean read depth (DP)")
-#contemporary depth
+#Contemporary depth
 summary(colMeans(dp[,c(1:25,26:37,43:53,54:56,57:68)]))
 
 #historical depth
@@ -66,7 +66,7 @@ summary(colMeans(dp[,c(-1:-25,-26:-37,-43:-53,-54:-56,-57:-68)]))
 #gt <- extract.gt(X)
 #hets <- is_het(gt)
 
-#Annotated contig names in TS_minE_best
+#Annotated Contig names in TS_minE_best
 #Y<-X[which(X@fix[,1]%in%Annot_minE_best$TR),]
 #Y<-X[which(X@fix[,1]%in%Annot_minE_best_TSL$TR),]
 #Y<-X[which(X@fix[,1]%in%Annot_minE_best_NRecip_TSL$TR),]
@@ -75,7 +75,7 @@ summary(colMeans(dp[,c(-1:-25,-26:-37,-43:-53,-54:-56,-57:-68)]))
 #barplot(dp, ylab = "Read depth (DP)")
 #summary(dp)
 
-geno <- extract.gt(X) # Character matrix containing the genotypes
+geno <- extract.gt(X) # Character matrix Containing the genotypes
 position <- getPOS(X) # Positions in bp
 chromosome <- getCHROM(X) # Chromosome information
 chromosome_n<-as.numeric(factor(chromosome))
@@ -114,7 +114,7 @@ table(as.vector(geno[,92])) #Turkey_H
 table(as.vector(geno))
 sum(is.na(geno))/(nrow(geno)*ncol(geno))
 
-#separate out the contemporary individuals
+#separate out the Contemporary individuals
 geno_c<-geno[,c(1:25,26:37,43:53,54:56,57:68)]
 colnames(geno_c)
 
@@ -433,7 +433,7 @@ points(P1$LocusName[my_out], P1$FST[my_out], col="magenta", pch=20)
 OutLoc<-P1[P1$OutlierFlag==TRUE,]
 OutLoc<-OutLoc[!is.na(OutLoc$OutlierFlag),]
 
-#contemporary
+#Contemporary
 ind.keep_c = 1:nrow(Gc)
 out_trim_c <- OutFLANK(my_fst_c[ind.keep_c,], NumberOfSamples=length(unique(pop_c)), qthreshold = 0.001, Hmin = 0.1)
 str(out_trim_c)
@@ -603,7 +603,7 @@ het_gg_observed_090421<-
        y = "Observed heterozygosity") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
         title = element_text(size = 16), legend.text = element_text(size = 14)) +
-  scale_y_continuous(position = "left", limits = c(0.125, 0.3)) 
+  scale_y_Continuous(position = "left", limits = c(0.125, 0.3)) 
 
 het_gg_expected_090421<-
   ggplot(het, aes(x=POP, y=E.HET/N_SITES), ) + 
@@ -613,7 +613,7 @@ het_gg_expected_090421<-
        y = "Expected heterozygosity") + 
   theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
         title = element_text(size = 16), legend.text = element_text(size = 14)) + 
-  scale_y_continuous(position = "right", limits = c(0.125, 0.3))
+  scale_y_Continuous(position = "right", limits = c(0.125, 0.3))
 
 het_gg_2figures_090421<-
   ggarrange(het_gg_observed_090421, het_gg_expected_090421,
@@ -1075,7 +1075,7 @@ IS_C_2.3_109_ang_auto$label <- "Iceland"
 NO_C_2.3_109_ang_auto$label <- "Norway"
 DK_C_2.3_109_ang_auto$label <- "Denmark"
 
-Con <- rbind(GL_C_2.3_109_ang_auto,IS_C_2.3_109_ang_auto,NO_C_2.3_109_ang_auto,DK_C_2.3_109_ang_auto)
+Con_SP <- rbind(GL_C_2.3_109_ang_auto,IS_C_2.3_109_ang_auto,NO_C_2.3_109_ang_auto,DK_C_2.3_109_ang_auto)
 
 options(scipen=5)
 
@@ -1105,53 +1105,17 @@ lines(DK_C_2.3_109_ang_auto$year, DK_C_2.3_109_ang_auto$Ne_97.5./1000, col="blue
 
 require(ggplot2)
 
-ggplot(Con)+
-  geom_line(aes(year/3.12,(Ne_median/1000),colour=label),lwd=1.5)+
-  geom_line(aes(year/3.12,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
-  geom_line(aes(year/3.12,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+ggplot(Con_SP)+
+  geom_line(aes(year/1.95,(Ne_median/1000),colour=label),lwd=1.5)+
+  geom_line(aes(year/1.95,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  geom_line(aes(year/1.95,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
   xlab("Years ago")+
   ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,160000),ylim=c(0,600))+
+  coord_cartesian(xlim=c(0,200000),ylim=c(0,600))+
   #scale_linetype_manual(values = rep("solid",10),guide="none")+
   scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
   #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
-  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
-  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
-  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
-  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle = 45,hjust=1))
-
-ggplot(Con)+
-  geom_line(aes(year/2.229,(Ne_median/1000),colour=label),lwd=1.5)+
-  geom_line(aes(year/2.229,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
-  geom_line(aes(year/2.229,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
-  xlab("Years ago")+
-  ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,160000),ylim=c(0,600))+
-  #scale_linetype_manual(values = rep("solid",10),guide="none")+
-  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
-  #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
-  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
-  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
-  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
-  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle = 45,hjust=1))
-
-ggplot(Con)+
-  geom_line(aes(year/1.56,(Ne_median/1000),colour=label),lwd=1.5)+
-  geom_line(aes(year/1.56,(Ne_2.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
-  geom_line(aes(year/1.56,(Ne_97.5./1000),colour=label),lty=3,lwd=1.5, alpha=0.3)+
-  xlab("Years ago")+
-  ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,160000),ylim=c(0,600))+
-  #scale_linetype_manual(values = rep("solid",10),guide="none")+
-  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
-  #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
+  scale_x_continuous(breaks = c(1000,seq(10000,200000,10000)))+
   geom_vline(xintercept=10000,lty=2,lwd=0.75)+
   geom_vline(xintercept=20000,lty=3,lwd=0.75)+
   geom_vline(xintercept=110000,lty=4,lwd=0.75)+
@@ -1160,18 +1124,19 @@ ggplot(Con)+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
 
 
-ggplot(Con)+
-  geom_line(aes(year/2.229,(Ne_median),colour=label),lwd=1.5)+
-  geom_line(aes(year/2.229,(Ne_2.5.),colour=label),lty=3,lwd=1.5, alpha=0.3)+
-  geom_line(aes(year/2.229,(Ne_97.5.),colour=label),lty=3,lwd=1.5, alpha=0.3)+
+ggplot(Con_SP)+
+  geom_line(aes(year/1.95,(Ne_median)/1000,colour=label),lwd=1.5)+
+  geom_line(aes(year/1.95,(Ne_2.5.)/1000,colour=label),lty=3,lwd=1.5, alpha=0.3)+
+  geom_line(aes(year/1.95,(Ne_97.5.)/1000,colour=label),lty=3,lwd=1.5, alpha=0.3)+
   xlab("Years ago")+
   ylab("Ne")+
-  coord_cartesian(xlim=c(0,200),ylim=c(0,1000))+
+  #coord_cartesian(xlim=c(0,200),ylim=c(0,3000))+
+  coord_cartesian(xlim=c(0,200),ylim=c(0,3))+
   #scale_linetype_manual(values = rep("solid",10),guide="none")+
   scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
   #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
   scale_x_continuous(breaks = c(seq(10,200,10)))+
-  #scale_y_continuous(breaks = c(seq(0.5,30,1)))+
+  #scale_y_Continuous(breaks = c(seq(0.5,30,1)))+
   geom_vline(xintercept=10000,lty=2,lwd=0.75)+
   geom_vline(xintercept=20000,lty=3,lwd=0.75)+
   geom_vline(xintercept=110000,lty=4,lwd=0.75)+
