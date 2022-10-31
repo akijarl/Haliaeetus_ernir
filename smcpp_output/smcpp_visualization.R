@@ -117,6 +117,7 @@ ggplot(Con[Con$x>100,])+
 
 setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
 setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
+setwd("E:/Research_AJL/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/")
 
 GC1<-read.csv("Greenland_con1.csv")
 GC2<-read.csv("Greenland_con2.csv")
@@ -239,23 +240,38 @@ EC10$replicate<-"J"
 
 EC<-rbind(EC1,EC2,EC3,EC4,EC5,EC6,EC7,EC8,EC9,EC10)
 
-Con <- rbind(IC,GC,NC,DC,EC)
+Con <- rbind(IC,GC,NC,DC)
 
 ggplot(Con[Con$x>100,])+
-  geom_line(aes(x*0.7,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+  geom_line(aes(x*0.8,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
   xlab("Years ago")+
   ylab("Ne/1000")+
-  coord_cartesian(xlim=c(0,160000),ylim=c(0,30))+
+  coord_cartesian(xlim=c(0,200000),ylim=c(0,30))+
   scale_linetype_manual(values = rep("solid",10),guide="none")+
-  scale_color_manual(name="Sample",values = c("blue","black","green","red","orange"), labels=c("Denmark","Estonia","Greenland","Iceland","Norway"))+
+  scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
   guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
-  geom_vline(xintercept=10000,lty=2)+
-  geom_vline(xintercept=20000,lty=3)+
-  geom_vline(xintercept=110000,lty=4)+
-  geom_vline(xintercept=150000,lty=4)+
+  scale_x_continuous(breaks = c(1000,seq(10000,200000,10000)))+
+  geom_vline(xintercept=10000,lty=2,lwd=0.75)+
+  geom_vline(xintercept=20000,lty=3,lwd=0.75)+
+  geom_vline(xintercept=110000,lty=4,lwd=0.75)+
+  geom_vline(xintercept=150000,lty=4,lwd=0.75)+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
+# ggplot(Con[Con$x>100,])+
+#   geom_line(aes(x*0.8,(y/1000),colour=label,lty=replicate),lwd=1.5,alpha=0.1)+
+#   xlab("Years ago")+
+#   ylab("Ne/1000")+
+#   coord_cartesian(xlim=c(0,160000),ylim=c(0,30))+
+#   scale_linetype_manual(values = rep("solid",10),guide="none")+
+#   scale_color_manual(name="Sample",values = c("blue","black","green","red","orange"), labels=c("Denmark","Estonia","Greenland","Iceland","Norway"))+
+#   guides(colour = guide_legend(override.aes = list(alpha = 1)))+
+#   scale_x_continuous(breaks = c(1000,seq(10000,160000,10000)))+
+#   geom_vline(xintercept=10000,lty=2)+
+#   geom_vline(xintercept=20000,lty=3)+
+#   geom_vline(xintercept=110000,lty=4)+
+#   geom_vline(xintercept=150000,lty=4)+
+#   theme_classic()+
+#   theme(axis.text.x = element_text(angle = 45,hjust=1))
 
 #Historic
 #setwd("/Users/akijarl/Documents/UI/rannsoknir/Haliaeetus/Haliaeetus_ernir/smcpp_output/nocubic/His/")
