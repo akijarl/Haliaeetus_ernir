@@ -522,8 +522,8 @@ for(i in chrom_out){
 # 
 # het_pops<-read.table("all_IGND_noSMALL")
 
-#setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/")
-setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/")
+#setwd("/home/aki/Documents/Rannsóknir/Haliaeetus/VCF/")
+setwd("/home/aki/Documents/Rannsóknir/Haliaeetus/Haliaeetus_ernir/")
 
 require(tidyverse)
 require(data.table)
@@ -603,7 +603,7 @@ het_gg_observed_090421<-
        y = "Observed heterozygosity") +
   theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
         title = element_text(size = 16), legend.text = element_text(size = 14)) +
-  scale_y_Continuous(position = "left", limits = c(0.125, 0.3)) 
+  scale_y_continuous(position = "left", limits = c(0.125, 0.3)) 
 
 het_gg_expected_090421<-
   ggplot(het, aes(x=POP, y=E.HET/N_SITES), ) + 
@@ -613,8 +613,9 @@ het_gg_expected_090421<-
        y = "Expected heterozygosity") + 
   theme(axis.text=element_text(size=12), axis.title=element_text(size=14), 
         title = element_text(size = 16), legend.text = element_text(size = 14)) + 
-  scale_y_Continuous(position = "right", limits = c(0.125, 0.3))
+  scale_y_continuous(position = "right", limits = c(0.125, 0.3))
 
+require(ggpubr)
 het_gg_2figures_090421<-
   ggarrange(het_gg_observed_090421, het_gg_expected_090421,
             labels = c("A", "B"),
@@ -637,6 +638,8 @@ het[, .(meanHETefrac=sd(hetE_frac)), by=POP]
 
 het[, .(meanHETofrac=mean(hetO_frac)), by=POP]
 het[, .(meanHETofrac=sd(hetO_frac)), by=POP]
+
+het$hetO_frac
 
 het_data_obs_exp_for_ggplot_true
 het[, .(meanE.HET=mean(E.HET)), by=POP]
@@ -935,9 +938,21 @@ F_comp<-merge(ROH,FH,by = "Group")
 plot(F_comp$F_ROH,F_comp$F_H)
 
 F_comp_filt<-merge(ROH_78,FH[!FH$Group=="IS_H",],by = "Group")
-ggplot(data=F_comp_filt)+
-  geom_point(aes(F_ROH,F_H,colour=Group),size=2)+
+
+F_comp<-data.frame("FH"=het$F,"FROH"=ROH_92_relaxed_310321$FROH)
+
+ggplot(data=F_comp)+
+  geom_point(aes(FROH,FH))+
   theme_classic()
+
+ggplot()+
+  geom_point(aes(het$missingness,(1000*ROH_92_relaxed_310321$KB)))+
+  theme_classic()
+
+cor.test(F_comp$FH,F_comp$FROH)
+
+ROH_92_relaxed_310321$FROH
+
 
 setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/")
 IS_GL <- read.table("Iceland_Greenland_c_c_comp.weir.fst",header = T)
@@ -1117,6 +1132,7 @@ ggplot(Con_SP)+
   scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
   #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
   scale_x_continuous(breaks = c(1000,seq(10000,200000,10000)))+
+  scale_y_continuous(breaks = c(seq(0,600,10)))+
   geom_vline(xintercept=10000,lty=2,lwd=0.75)+
   geom_vline(xintercept=25000,lty=3,lwd=0.75)+
   geom_vline(xintercept=110000,lty=4,lwd=0.75)+
@@ -1132,12 +1148,12 @@ ggplot(Con_SP)+
   xlab("Years ago")+
   ylab("Ne")+
   #coord_cartesian(xlim=c(0,200),ylim=c(0,3000))+
-  coord_cartesian(xlim=c(0,3500),ylim=c(0,25000))+
+  coord_cartesian(xlim=c(0,35000),ylim=c(0,150000))+
   #scale_linetype_manual(values = rep("solid",10),guide="none")+
   scale_color_manual(name="Sample",values = c("blue","green","red","orange"), labels=c("Denmark","Greenland","Iceland","Norway"))+
   #guides(colour = guide_legend(override.aes = list(alpha = 1)))+
-  scale_x_continuous(breaks = c(seq(0,3500,100)))+
-  scale_y_continuous(breaks = c(seq(0,25000,1000)))+
+  scale_x_continuous(breaks = c(seq(0,35000,1000)))+
+  scale_y_continuous(breaks = c(seq(0,150000,10000)))+
   geom_vline(xintercept=10000,lty=2,lwd=0.75)+
   geom_vline(xintercept=20000,lty=3,lwd=0.75)+
   geom_vline(xintercept=110000,lty=4,lwd=0.75)+
@@ -1163,3 +1179,10 @@ ggplot(Con_SP)+
   geom_vline(xintercept=150000,lty=4,lwd=0.75)+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
+
+#### het vs depth
+mean_depth_true<-read.table("Truemeandepth_onlysitespresentinindividual.txt", header = T)
+missingness<-read.table("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30.imiss", header = T)
+het_data_withdepth<-het_data
+het_data_withdepth$mean_depth<-mean_depth_true$MEAN_DEPTH
+het_data_withdepth$F_MISS<-missingness$F_MISS
