@@ -1,4 +1,4 @@
-setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/Haliaeetus_ernir/ADMIXTURE/")
+setwd("/home/aki/Documents/Rannsóknir/Haliaeetus/Haliaeetus_ernir/ADMIXTURE/")
 require(ggplot2)
 
 cv<-read.csv("logout_all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30_LD_prune0.5_w134.cv.error",header=F,sep=" " )

@@ -945,14 +945,48 @@ ggplot(data=F_comp)+
   geom_point(aes(FROH,FH))+
   theme_classic()
 
-ggplot()+
-  geom_point(aes(het$missingness,(1000*ROH_92_relaxed_310321$KB)))+
+ROH_MIS<-data.frame("IND"=het$INDV,"POP"=het$POP,"FH"=het$F,"FROH"=ROH_92_relaxed_310321$FROH,"MISS"=het$missingness,"ROH_Kb"=(ROH_92_relaxed_310321$KB))
+
+ggplot(data=ROH_MIS)+
+  geom_point(aes(MISS,ROH_Kb/1000,color=POP,shape=POP),size=5)+
+  xlab("Missingness")+
+  ylab("Length of ROH (Mb)")+
+  scale_shape_manual(values = c(1,2,3,4,5,6,7,8,9,10),name="Pop_Time")+
+  labs(color  = "Pop_Time", shape = "Pop_Time")+
+  guides(color = guide_legend(override.aes = list(size = 5)),shape = guide_legend(override.aes = list(size = 5))) +
   theme_classic()
 
-cor.test(F_comp$FH,F_comp$FROH)
+miss <- c("BB38","DKH2","DKH14","GLH1","GLH15","ISH4","ISH6","K9","K8","K6","K2","K4","NOH6","NOH7")
+ROH_MIS_78<-ROH_MIS[!ROH_MIS$IND%in%miss,]
+
+aggregate(ROH_MIS$FROH,list(ROH_MIS$POP),FUN=sd)
+sd(ROH_MIS$FROH)
+
+ggplot(data=ROH_MIS)+
+  geom_point(aes(FROH,FH,color=POP,shape=POP),size=5)+
+  xlab(expression("F"[ROH]))+
+  ylab(expression("F"[H]))+
+  scale_shape_manual(values = c(1,2,3,4,5,6,7,8,9,10),name="Pop_Time")+
+  labs(color  = "Pop_Time", shape = "Pop_Time")+
+  guides(color = guide_legend(override.aes = list(size = 5)),shape = guide_legend(override.aes = list(size = 5))) +
+  theme_classic()
+
+cor.test(ROH_MIS$FH,ROH_MIS$FROH)
+
+ggplot(data=ROH_MIS_78)+
+  geom_point(aes(FROH,FH,color=POP,shape=POP),size=5)+
+  xlab(expression("F"[ROH]))+
+  ylab(expression("F"[H]))+
+  scale_shape_manual(values = c(1,2,3,4,5,6,7,8,9,10),name="Pop_Time")+
+  labs(color  = "Pop_Time", shape = "Pop_Time")+
+  guides(color = guide_legend(override.aes = list(size = 5)),shape = guide_legend(override.aes = list(size = 5))) +
+  theme_classic()
+
+cor.test(ROH_MIS_78$FH,ROH_MIS_78$FROH)
 
 ROH_92_relaxed_310321$FROH
 
+cor.test(het$hetO_frac,het$missingness)
 
 setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/")
 IS_GL <- read.table("Iceland_Greenland_c_c_comp.weir.fst",header = T)
@@ -1181,6 +1215,34 @@ ggplot(Con_SP)+
   theme(axis.text.x = element_text(angle = 45,hjust=1))
 
 #### het vs depth
+het$DP<-colMeans(dp)
+
+ROH_MIS<-data.frame("IND"=het$INDV,"POP"=het$POP,"MISS"=het$missingness,"ROH_Kb"=(ROH_92_relaxed_310321$KB),"DP"=het$DP)
+miss <- c("BB38","DKH2","DKH14","GLH1","GLH15","ISH4","ISH6","K9","K8","K6","K2","K4","NOH6","NOH7")
+ROH_MIS_78<-ROH_MIS[!ROH_MIS$IND%in%miss,]
+
+ggplot(data=ROH_MIS)+
+  geom_point(aes(ROH_Kb/1000,DP,color=POP,shape=POP),size=5)+
+  xlab("Length of ROH (Mb)")+
+  ylab("Mean Depth")+
+  scale_shape_manual(values = c(1,2,3,4,5,6,7,8,9,10),name="Pop_Time")+
+  labs(color  = "Pop_Time", shape = "Pop_Time")+
+  guides(color = guide_legend(override.aes = list(size = 5)),shape = guide_legend(override.aes = list(size = 5))) +
+  theme_classic()
+
+cor.test(ROH_MIS$ROH_Kb/1000,ROH_MIS$DP)
+
+ggplot(data=ROH_MIS_78)+
+  geom_point(aes(ROH_Kb/1000,DP,color=POP,shape=POP),size=5)+
+  xlab("Length of ROH (Mb)")+
+  ylab("Mean Depth")+
+  scale_shape_manual(values = c(1,2,3,4,5,6,7,8,9,10),name="Pop_Time")+
+  labs(color  = "Pop_Time", shape = "Pop_Time")+
+  guides(color = guide_legend(override.aes = list(size = 5)),shape = guide_legend(override.aes = list(size = 5))) +
+  theme_classic()
+
+cor.test(ROH_MIS_78$ROH_Kb/1000,ROH_MIS_78$DP)
+
 mean_depth_true<-read.table("Truemeandepth_onlysitespresentinindividual.txt", header = T)
 missingness<-read.table("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.75_HetHom_minMQ30.imiss", header = T)
 het_data_withdepth<-het_data
