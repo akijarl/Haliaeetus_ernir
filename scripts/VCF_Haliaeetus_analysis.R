@@ -44,6 +44,7 @@ X <- extract.indels(X)
 
 queryMETA(X)
 queryMETA(X, element = 'DP')
+colnames(X@gt)[-1]
 
 dp <- extract.gt(X, element = "DP", as.numeric=TRUE)
 # barplot(dp, ylab = "Read depth (DP)")
@@ -56,6 +57,7 @@ dp <- extract.gt(X, element = "DP", as.numeric=TRUE)
 
 summary(dp)
 colMeans(dp)
+colSums(dp)/het$N_SITES
 summary(colMeans(dp))
 barplot(colMeans(dp), ylab = "Mean read depth (DP)")
 #Contemporary depth
@@ -917,6 +919,7 @@ ggplot(data=ROH_92_relaxed_310321,
     #axis.text.x = element_text(size = 12),
     axis.title.y = element_text(size = 16),
     text = element_text(size = 14))+
+  geom_abline(intercept=0,slope=1,linetype="dashed",alpha=0.25)+
   theme_classic()
 
 autSize <- 1103368343 #length of the autosome
@@ -1248,3 +1251,9 @@ missingness<-read.table("all_results_mac1_92ind_Q1000_GQ20_DP8_autosomes_miss0.7
 het_data_withdepth<-het_data
 het_data_withdepth$mean_depth<-mean_depth_true$MEAN_DEPTH
 het_data_withdepth$F_MISS<-missingness$F_MISS
+
+#Depth summary
+depth<-data.frame(
+  "DP_all"=colMeans(dp),
+  "DP"=colSums(dp)/het$N_SITES,
+  "Missing"=het$missingness)
