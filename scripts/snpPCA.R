@@ -61,6 +61,23 @@ ggplot(spca_tab, aes(EV1,EV2,color=Pop,shape=Pop,label=sample.id)) +
   labs(color="") + 
   theme_classic()
 
+spcaM_tab<-read.table("Mainland_LD.eigenvec")
+spcaM_Per_exp<-read.table("Mainland_LD.eigenval")
+colnames(spcaM_tab)<-c("sample.id","EV1","EV2","EV3", "EV4","EV5","EV6","EV7","EV8","EV9","EV10","Pop")
+#spca_tab$PopS<-factor(spca_tab$PopS,levels = c("TU_h","EE_c","NO_h","DK_h","NO_c", "DK_c","IS_c","IS_h","GL_c","GL_h"))
+clM<-c("blue", "cyan","orange", "black","grey","brown")
+shpM<-c(0,1,2,7,8,10)
+ggplot(spcaM_tab, aes(EV1,EV2,color=Pop,shape=Pop)) +
+  xlab(paste("PC1 (",round(spcaM_Per_exp[1,],2),"%)",sep="")) + 
+  ylab(paste("PC2 (",round(spcaM_Per_exp[2,],2),"%)",sep="")) + 
+  geom_point(size=3) + 
+  #geom_point(size=3, subset = .(label == 'point'))+
+  stat_ellipse(level=0.75,size=1)+
+  scale_shape_manual(name="Pop", labels=unique(spcaM_tab$Pop)[order(unique(spcaM_tab$Pop))], values=shpM)+
+  scale_color_manual(name="Pop", labels=unique(spcaM_tab$Pop)[order(unique(spcaM_tab$Pop))], values=clM)+
+  labs(color="") + 
+  theme_classic()
+
 ibs <- snpgdsIBS(ernir, autosome.only = F, remove.monosnp = F)
 
 loc<-cmdscale(1-ibs$ibs,k=2)
