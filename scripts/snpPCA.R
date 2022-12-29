@@ -49,7 +49,7 @@ spca_tab<-read.table("../VCF/ernir_LD.eigenvec")
 spca_Per_exp<-read.table("../VCF/ernir_LD.eigenval")
 spca_tab$V12<-Pop
 colnames(spca_tab)<-c("sample.id","EV1","EV2","EV3", "EV4","EV5","EV6","EV7","EV8","EV9","EV10","PopS")
-spca_tab$Pop<-factor(spca_tab$Pop,levels = c("TU_h","EE_c","NO_h","DK_h","NO_c", "DK_c","IS_c","IS_h","GL_c","GL_h"))
+spca_tab$PopS<-factor(spca_tab$PopS,levels = c("TU_h","EE_c","NO_h","DK_h","NO_c", "DK_c","IS_c","IS_h","GL_c","GL_h"))
 ggplot(spca_tab, aes(EV1,EV2,color=Pop,shape=Pop,label=sample.id)) +
   xlab(paste("PC1 (",round(spca_Per_exp[1,],2),"%)",sep="")) + 
   ylab(paste("PC2 (",round(spca_Per_exp[2,],2),"%)",sep="")) + 
