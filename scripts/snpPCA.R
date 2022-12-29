@@ -45,26 +45,27 @@ ggplot(tab, aes(EV1,EV2,color=Pop,shape=Pop,label=sample.id)) +
   theme_classic()
 
 #smartPCA
-spca_tab<-read.table("../VCF/ernir_LD.eigenvec")
-spca_Per_exp<-read.table("../VCF/ernir_LD.eigenval")
+spca_tab<-read.table("ernir_LD.eigenvec")
+spca_Per_exp<-read.table("ernir_LD.eigenval")
 spca_tab$V12<-Pop
-colnames(spca_tab)<-c("sample.id","EV1","EV2","EV3", "EV4","EV5","EV6","EV7","EV8","EV9","EV10","PopS")
-spca_tab$PopS<-factor(spca_tab$PopS,levels = c("TU_h","EE_c","NO_h","DK_h","NO_c", "DK_c","IS_c","IS_h","GL_c","GL_h"))
-ggplot(spca_tab, aes(EV1,EV2,color=Pop,shape=Pop,label=sample.id)) +
+colnames(spca_tab)<-c("sample.id","EV1","EV2","EV3", "EV4","EV5","EV6","EV7","EV8","EV9","EV10","Pop")
+spca_tab$order<- c(rep(1,25),rep(2,12),rep(3,5),rep(4,11),rep(9,3),rep(5,12),rep(6,8),rep(7,2),rep(8,13),10)
+spca_tab<-spca_tab[order(spca_tab$order),]
+require(dplyr)
+ggplot(spca_tab,aes(EV1,EV2,color=Pop,shape=Pop)) +
   xlab(paste("PC1 (",round(spca_Per_exp[1,],2),"%)",sep="")) + 
   ylab(paste("PC2 (",round(spca_Per_exp[2,],2),"%)",sep="")) + 
-  geom_point(size=3) + 
-  #geom_point(size=3, subset = .(label == 'point'))+
   stat_ellipse(level=0.75,size=1)+
-  scale_shape_manual(name="Pop", labels=unique(Pop)[order(unique(Pop))], values=shp)+
-  scale_color_manual(name="Pop", labels=unique(Pop)[order(unique(Pop))], values=cl)+
+  geom_point(size=3) +
+  #geom_point(size=3, subset = .(label == 'point'))+
+  scale_shape_manual(name="Pop", labels=unique(spca_tab$Pop)[order(unique(spca_tab$Pop))], values=shp)+
+  scale_color_manual(name="Pop", labels=unique(spca_tab$Pop)[order(unique(spca_tab$Pop))], values=cl)+
   labs(color="") + 
   theme_classic()
 
 spcaM_tab<-read.table("Mainland_LD.eigenvec")
 spcaM_Per_exp<-read.table("Mainland_LD.eigenval")
 colnames(spcaM_tab)<-c("sample.id","EV1","EV2","EV3", "EV4","EV5","EV6","EV7","EV8","EV9","EV10","Pop")
-#spca_tab$PopS<-factor(spca_tab$PopS,levels = c("TU_h","EE_c","NO_h","DK_h","NO_c", "DK_c","IS_c","IS_h","GL_c","GL_h"))
 clM<-c("blue", "cyan","orange", "black","grey","brown")
 shpM<-c(0,1,2,7,8,10)
 ggplot(spcaM_tab, aes(EV1,EV2,color=Pop,shape=Pop)) +
