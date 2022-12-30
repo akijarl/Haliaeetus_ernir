@@ -51,7 +51,7 @@ spca_tab$V12<-Pop
 colnames(spca_tab)<-c("sample.id","EV1","EV2","EV3", "EV4","EV5","EV6","EV7","EV8","EV9","EV10","Pop")
 spca_tab$order<- c(rep(1,25),rep(2,12),rep(3,5),rep(4,11),rep(9,3),rep(5,12),rep(6,8),rep(7,2),rep(8,13),10)
 spca_tab<-spca_tab[order(spca_tab$order),]
-require(dplyr)
+
 ggplot(spca_tab,aes(EV1,EV2,color=Pop,shape=Pop)) +
   xlab(paste("PC1 (",round(spca_Per_exp[1,],2),"%)",sep="")) + 
   ylab(paste("PC2 (",round(spca_Per_exp[2,],2),"%)",sep="")) + 
