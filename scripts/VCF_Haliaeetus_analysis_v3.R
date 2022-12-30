@@ -953,8 +953,11 @@ cor.test(F_comp$FH,F_comp$FROH)
 
 ROH_92_relaxed_310321$FROH
 
+#Manhattan plots
+setwd("/home/aki/Documents/Rannsóknir/Haliaeetus/VCF/")
+require(qqman)
+require(plyr)
 
-setwd("/home/aki/Documents/Rannsóknir/Haaliaeetus/VCF/")
 IS_GL <- read.table("Iceland_Greenland_c_c_comp.weir.fst",header = T)
 IS_NO <- read.table("Iceland_Norway_c_c_comp.weir.fst",header = T)
 IS_DK <- read.table("Iceland_Denmark_c_c_comp.weir.fst",header = T)
@@ -1015,6 +1018,12 @@ NO_ch$CHROM <- revalue(NO_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606
 DK_ch$CHROM <- revalue(DK_ch$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
 
 IS_GL$CHROM <- revalue(IS_GL$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+IS_NO$CHROM <- revalue(IS_NO$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+IS_DK$CHROM <- revalue(IS_DK$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+GL_NO$CHROM <- revalue(GL_NO$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+GL_DK$CHROM <- revalue(GL_DK$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+NO_DK$CHROM <- revalue(NO_DK$CHROM, c("LR606181.1"="1", "LR606182.1"="2", "LR606183.1"="3", "LR606184.1"="4", "LR606185.1"="5", "LR606186.1"="6", "LR606187.1"="7", "LR606188.1"="8", "LR606189.1"="9", "LR606190.1"="10", "LR606191.1"="11", "LR606192.1"="12", "LR606193.1"="13", "LR606194.1"="14", "LR606195.1"="15", "LR606196.1"="16", "LR606197.1"="17", "LR606198.1"="18", "LR606199.1"="19", "LR606200.1"="20", "LR606201.1"="21", "LR606202.1"="22", "LR606203.1"="23", "LR606204.1"="24", "LR606205.1"="25", "LR606206.1"="26"))
+
 
 IS_ch$CHROM <- as.numeric(IS_ch$CHROM)
 GL_ch$CHROM <- as.numeric(GL_ch$CHROM)
@@ -1022,6 +1031,11 @@ NO_ch$CHROM <- as.numeric(NO_ch$CHROM)
 DK_ch$CHROM <- as.numeric(DK_ch$CHROM)
 
 IS_GL$CHROM <- as.numeric(IS_GL$CHROM)
+IS_NO$CHROM <- as.numeric(IS_NO$CHROM)
+IS_DK$CHROM <- as.numeric(IS_DK$CHROM)
+GL_NO$CHROM <- as.numeric(GL_NO$CHROM)
+GL_DK$CHROM <- as.numeric(GL_DK$CHROM)
+NO_DK$CHROM <- as.numeric(NO_DK$CHROM)
 
 IS_ch$SNP<-seq.int(nrow(IS_ch))
 GL_ch$SNP<-seq.int(nrow(GL_ch))
@@ -1029,6 +1043,11 @@ NO_ch$SNP<-seq.int(nrow(NO_ch))
 DK_ch$SNP<-seq.int(nrow(DK_ch))
 
 IS_GL$SNP<-seq.int(nrow(IS_GL))
+IS_NO$SNP<-seq.int(nrow(IS_NO))
+IS_DK$SNP<-seq.int(nrow(IS_DK))
+GL_NO$SNP<-seq.int(nrow(GL_NO))
+GL_DK$SNP<-seq.int(nrow(GL_DK))
+NO_DK$SNP<-seq.int(nrow(NO_DK))
 
 IS_ch<-IS_ch[!is.na(IS_ch$WEIR_AND_COCKERHAM_FST),]
 GL_ch<-GL_ch[!is.na(GL_ch$WEIR_AND_COCKERHAM_FST),]
@@ -1036,6 +1055,12 @@ NO_ch<-NO_ch[!is.na(NO_ch$WEIR_AND_COCKERHAM_FST),]
 DK_ch<-DK_ch[!is.na(DK_ch$WEIR_AND_COCKERHAM_FST),]
 
 IS_GL<-IS_GL[!is.na(IS_GL$WEIR_AND_COCKERHAM_FST),]
+IS_NO<-IS_NO[!is.na(IS_NO$WEIR_AND_COCKERHAM_FST),]
+IS_DK<-IS_DK[!is.na(IS_DK$WEIR_AND_COCKERHAM_FST),]
+GL_NO<-GL_NO[!is.na(GL_NO$WEIR_AND_COCKERHAM_FST),]
+GL_DK<-GL_DK[!is.na(GL_DK$WEIR_AND_COCKERHAM_FST),]
+NO_DK<-NO_DK[!is.na(NO_DK$WEIR_AND_COCKERHAM_FST),]
+
 
 manhattan(IS_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
 manhattan(GL_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
@@ -1043,6 +1068,12 @@ manhattan(NO_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", l
 manhattan(DK_ch, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
 manhattan(IS_GL, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
 
+manhattan(IS_GL, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(IS_NO, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(IS_DK, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(GL_NO, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(GL_DK, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
+manhattan(NO_DK, chr="CHROM", bp="POS", p="WEIR_AND_COCKERHAM_FST", snp="SNP", logp=FALSE, ylab="", xlab="", cex.axis=1.5, ylim=c(0.0,1.1))
 
 
 
